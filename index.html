@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fire Alarm Inventory Pro</title>
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/595/595067.png">
+    <title>Linkage Fire Inventory</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="https://static.mywebsites360.com/fafa4aabcb704266ab8fdca592e6b118/i/d02ba4221db84af1ad34fa4e1420c4a0/9/4SoifmQp45JMgBnHdjjec/Fire-Alarm-Installation.png">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        
         body { 
             font-family: 'Inter', sans-serif; 
             -webkit-tap-highlight-color: transparent; 
@@ -17,39 +17,24 @@
             background-image: radial-gradient(#cbd5e1 0.5px, transparent 0.5px);
             background-size: 24px 24px;
         }
-        
-        .glass-card { 
-            background: rgba(255, 255, 255, 0.95); 
-            backdrop-filter: blur(10px); 
-        }
-        
-        .loader { 
-            border-top-color: #dc2626; 
-            animation: spin 1s linear infinite; 
-        }
-        
-        @keyframes spin { 
-            0% { transform: rotate(0deg); } 
-            100% { transform: rotate(360deg); } 
-        }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .loader { border-top-color: #dc2626; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 pb-10">
 
-<nav class="bg-slate-900 text-white p-4 sticky top-0 z-50 shadow-md">
+    <nav class="bg-slate-900 text-white p-4 sticky top-0 z-50 shadow-md">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div class="flex items-center gap-4">
                 <img src="https://static.mywebsites360.com/fafa4aabcb704266ab8fdca592e6b118/i/c62c06c2bbe846d2a49a67e52a23a4a6/9/5feFb8zhrk/Logo-Grey.png" 
                      alt="Linkage Logo" class="h-10 w-auto object-contain">
-                
                 <div class="h-8 w-[1px] bg-slate-700"></div>
-
                 <div class="flex flex-col">
                     <h1 class="text-xs uppercase tracking-[0.3em] text-red-500 font-black">Inventory</h1>
                     <span class="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-medium">Control System</span>
                 </div>
             </div>
-            
             <div id="status-indicator" class="flex items-center gap-1 text-[9px] text-gray-400 font-bold tracking-widest">
                 <span class="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_5px_#22c55e]"></span> LIVE
             </div>
@@ -57,7 +42,6 @@
     </nav>
 
     <main class="max-w-md mx-auto p-5 space-y-6">
-        
         <div class="text-center py-4">
             <h2 class="text-2xl font-bold text-slate-800">Inventory Sync</h2>
             <p class="text-gray-500 text-sm">Register equipment movement</p>
@@ -65,37 +49,31 @@
 
         <div class="glass-card rounded-3xl shadow-2xl p-6 border border-white">
             <form id="inventoryForm" class="space-y-6">
-                
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Technician</label>
                     <input type="text" id="technician" required placeholder="Full Name" 
-                        class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 focus:bg-white outline-none transition-all shadow-sm">
+                        class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none shadow-sm">
                 </div>
-
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Job Name / Address</label>
                     <input type="text" id="jobName" required placeholder="Client or Project" 
-                        class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 focus:bg-white outline-none transition-all shadow-sm">
+                        class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none shadow-sm">
                 </div>
-
                 <div class="relative">
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Search Device / Part #</label>
                     <input list="partsList" id="partNumber" required placeholder="Type model..." 
                         onchange="updateStockDisplay()"
-                        class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 focus:bg-white outline-none transition-all shadow-sm">
+                        class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none shadow-sm">
                     <datalist id="partsList"></datalist>
-                    
                     <div id="stockDisplay" class="mt-3 inline-flex items-center px-3 py-1 rounded-full bg-slate-100 text-xs font-bold text-slate-600">
                         In Stock: <span id="stockValue" class="ml-1 text-slate-900">--</span>
                     </div>
                 </div>
-
                 <hr class="border-gray-100">
-
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Action</label>
-                        <select id="action" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none appearance-none font-semibold">
+                        <select id="action" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none font-semibold">
                             <option value="OUT">Check-Out</option>
                             <option value="IN">Check-In</option>
                         </select>
@@ -106,13 +84,11 @@
                             class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none text-center font-bold text-lg shadow-sm">
                     </div>
                 </div>
-
                 <button type="submit" id="submitBtn" 
                     class="w-full bg-slate-900 hover:bg-red-600 text-white font-bold py-5 rounded-2xl shadow-xl transition-all active:scale-95 flex justify-center items-center gap-2">
                     <span>SUBMIT ENTRY</span>
                 </button>
             </form>
-
             <div id="successMsg" class="hidden mt-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-2xl text-center font-bold animate-bounce">
                 Saved Successfully! ✓
             </div>
@@ -120,7 +96,7 @@
     </main>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySc9h2_s-WPCRhoUeX8jqU_X7Ic8gvOuxgQkzjRjsqlAEpZxdUzz-aizshxKFjRf5gyQ/exec'; // Reemplazar aquí
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySc9h2_s-WPCRhoUeX8jqU_X7Ic8gvOuxgQkzjRjsqlAEpZxdUzz-aizshxKFjRf5gyQ/exec';
         let inventoryData = [];
 
         window.onload = async () => {
@@ -135,7 +111,6 @@
                     datalist.appendChild(option);
                 });
             } catch (error) {
-                console.error('Connection error');
                 document.getElementById('status-indicator').innerHTML = '<span class="w-2 h-2 bg-red-500 rounded-full"></span> OFFLINE';
             }
         };
@@ -156,9 +131,8 @@
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             const msg = document.getElementById('successMsg');
-            
             btn.disabled = true;
-            btn.innerHTML = '<div class="loader rounded-full border-4 border-gray-300 h-6 w-6"></div> Loading...';
+            btn.innerHTML = 'Loading...';
 
             const payload = {
                 technician: document.getElementById('technician').value,
@@ -174,25 +148,20 @@
                 document.getElementById('inventoryForm').reset();
                 setTimeout(() => { msg.classList.add('hidden'); location.reload(); }, 3000);
             } catch (error) {
-                alert('Connection Error. Try again.');
-            } finally {
+                alert('Error connecting to Sheets');
                 btn.disabled = false;
-                btn.innerHTML = '<span>SUBMIT ENTRY</span>';
+                btn.innerHTML = 'SUBMIT ENTRY';
             }
         };
+
+        // REGISTRO DEL SERVICE WORKER
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js', { scope: './' })
+                .then(reg => console.log('SW OK'))
+                .catch(err => console.log('SW Error', err));
+            });
+        }
     </script>
-    <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('Service Worker registered'))
-        .catch(err => console.log('Service Worker error', err));
-    });
-  }
-</script>
 </body>
 </html>
-
-
-
-
