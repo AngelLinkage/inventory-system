@@ -1,17 +1,17 @@
 {
-  "name": "Linkage Inventory",
+  "name": "Linkage Fire Inventory",
   "short_name": "Linkage",
-  "description": "Inventory Control for Linkage Fire Corp",
+  "description": "Inventory Control System",
   "start_url": "/inventory-system/",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
   "icons": [
     {
       "src": "https://static.mywebsites360.com/fafa4aabcb704266ab8fdca592e6b118/i/d02ba4221db84af1ad34fa4e1420c4a0/9/4SoifmQp45JMgBnHdjjec/Fire-Alarm-Installation.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
