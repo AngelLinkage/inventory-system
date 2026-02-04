@@ -1,5 +1,8 @@
-self.addEventListener('fetch', function(event) {
-  // Este código vacío es suficiente para engañar al navegador 
-  // y que permita la instalación de la App.
+const CACHE_NAME = 'linkage-v1';
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
+
+self.addEventListener('fetch', (event) => {
   event.respondWith(fetch(event.request));
 });
