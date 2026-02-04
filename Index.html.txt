@@ -8,17 +8,30 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .loader { border-top-color: #dc2626; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    body {
-    background-color: #f8fafc;
-    background-image: radial-gradient(#cbd5e1 0.5px, transparent 0.5px);
-    background-size: 24px 24px; /* Esto crea un patrón de puntos sutil muy profesional */
-}
-
-</style>
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            -webkit-tap-highlight-color: transparent; 
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 0.5px, transparent 0.5px);
+            background-size: 24px 24px;
+        }
+        
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px); 
+        }
+        
+        .loader { 
+            border-top-color: #dc2626; 
+            animation: spin 1s linear infinite; 
+        }
+        
+        @keyframes spin { 
+            0% { transform: rotate(0deg); } 
+            100% { transform: rotate(360deg); } 
+        }
+    </style>
 </head>
 <body class="bg-gray-100 text-gray-900 pb-10">
 
@@ -160,5 +173,4 @@
         };
     </script>
 </body>
-
 </html>
