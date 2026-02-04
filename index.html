@@ -162,6 +162,17 @@
                 .catch(err => console.log('SW Error', err));
             });
         }
+        <script>
+  // Registro simplificado al máximo
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js');
+  }
+
+  // Esto fuerza a que aparezca el botón de instalar sin errores
+  window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('Listo para instalar');
+  });
     </script>
 </body>
 </html>
+
