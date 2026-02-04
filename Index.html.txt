@@ -12,7 +12,13 @@
         .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         .loader { border-top-color: #dc2626; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    </style>
+    body {
+    background-color: #f8fafc;
+    background-image: radial-gradient(#cbd5e1 0.5px, transparent 0.5px);
+    background-size: 24px 24px; /* Esto crea un patrón de puntos sutil muy profesional */
+}
+
+</style>
 </head>
 <body class="bg-gray-100 text-gray-900 pb-10">
 
@@ -154,4 +160,5 @@
         };
     </script>
 </body>
+
 </html>
