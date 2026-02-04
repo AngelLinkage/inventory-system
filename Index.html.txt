@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fire Alarm Inventory Pro</title>
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/595/595067.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .loader { border-top-color: #dc2626; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-900 pb-10">
+
+    <nav class="bg-slate-900 text-white p-4 sticky top-0 z-50 shadow-md">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 bg-red-600 rounded flex items-center justify-center font-bold text-xl">F</div>
+                <h1 class="font-bold tracking-tight text-lg">FIRE ALARM <span class="text-red-500">OPS</span></h1>
+            </div>
+            <div id="status-indicator" class="flex items-center gap-1 text-xs text-gray-400 font-medium">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span> ONLINE
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-md mx-auto p-5 space-y-6">
+        
+        <div class="text-center py-4">
+            <h2 class="text-2xl font-bold text-slate-800">Inventory Sync</h2>
+            <p class="text-gray-500 text-sm">Register equipment movement</p>
+        </div>
+
+        <div class="glass-card rounded-3xl shadow-2xl p-6 border border-white">
+            <form id="inventoryForm" class="space-y-6">
+                
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Technician</label>
+                    <input type="text" id="technician" required placeholder="Full Name" 
+                        class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 focus:bg-white outline-none transition-all shadow-sm">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Job Name / Address</label>
+                    <input type="text" id="jobName" required placeholder="Client or Project" 
+                        class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 focus:bg-white outline-none transition-all shadow-sm">
+                </div>
+
+                <div class="relative">
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Search Device / Part #</label>
+                    <input list="partsList" id="partNumber" required placeholder="Type model..." 
+                        onchange="updateStockDisplay()"
+                        class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 focus:bg-white outline-none transition-all shadow-sm">
+                    <datalist id="partsList"></datalist>
+                    
+                    <div id="stockDisplay" class="mt-3 inline-flex items-center px-3 py-1 rounded-full bg-slate-100 text-xs font-bold text-slate-600">
+                        In Stock: <span id="stockValue" class="ml-1 text-slate-900">--</span>
+                    </div>
+                </div>
+
+                <hr class="border-gray-100">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Action</label>
+                        <select id="action" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none appearance-none font-semibold">
+                            <option value="OUT">Check-Out</option>
+                            <option value="IN">Check-In</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Quantity</label>
+                        <input type="number" id="quantity" required min="1" value="1" 
+                            class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none text-center font-bold text-lg shadow-sm">
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn" 
+                    class="w-full bg-slate-900 hover:bg-red-600 text-white font-bold py-5 rounded-2xl shadow-xl transition-all active:scale-95 flex justify-center items-center gap-2">
+                    <span>SUBMIT ENTRY</span>
+                </button>
+            </form>
+
+            <div id="successMsg" class="hidden mt-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-2xl text-center font-bold animate-bounce">
+                Saved Successfully! ✓
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySc9h2_s-WPCRhoUeX8jqU_X7Ic8gvOuxgQkzjRjsqlAEpZxdUzz-aizshxKFjRf5gyQ/exec'; // Reemplazar aquí
+        let inventoryData = [];
+
+        window.onload = async () => {
+            try {
+                const response = await fetch(SCRIPT_URL);
+                inventoryData = await response.json();
+                const datalist = document.getElementById('partsList');
+                inventoryData.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.partNumber;
+                    option.textContent = `${item.brand} | ${item.description}`;
+                    datalist.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Connection error');
+                document.getElementById('status-indicator').innerHTML = '<span class="w-2 h-2 bg-red-500 rounded-full"></span> OFFLINE';
+            }
+        };
+
+        function updateStockDisplay() {
+            const selectedPart = document.getElementById('partNumber').value;
+            const item = inventoryData.find(i => i.partNumber === selectedPart);
+            const val = document.getElementById('stockValue');
+            if (item) {
+                val.textContent = item.currentStock;
+                val.className = item.currentStock < 5 ? "ml-1 text-red-600 font-black" : "ml-1 text-green-600 font-black";
+            } else {
+                val.textContent = "--";
+            }
+        }
+
+        document.getElementById('inventoryForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const msg = document.getElementById('successMsg');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<div class="loader rounded-full border-4 border-gray-300 h-6 w-6"></div> Loading...';
+
+            const payload = {
+                technician: document.getElementById('technician').value,
+                jobName: document.getElementById('jobName').value,
+                partNumber: document.getElementById('partNumber').value,
+                action: document.getElementById('action').value,
+                quantity: document.getElementById('quantity').value
+            };
+
+            try {
+                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+                msg.classList.remove('hidden');
+                document.getElementById('inventoryForm').reset();
+                setTimeout(() => { msg.classList.add('hidden'); location.reload(); }, 3000);
+            } catch (error) {
+                alert('Connection Error. Try again.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>SUBMIT ENTRY</span>';
+            }
+        };
+    </script>
+</body>
+</html>
