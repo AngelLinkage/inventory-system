@@ -20,6 +20,7 @@
         .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
         .loader { border-top-color: #dc2626; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        select { appearance: none; } /* Limpia estilo nativo para consistencia */
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 pb-10">
@@ -54,22 +55,27 @@
                     <input type="text" id="technician" required placeholder="Full Name" 
                         class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none shadow-sm">
                 </div>
+
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Job Name / Address</label>
                     <input type="text" id="jobName" required placeholder="Client or Project" 
                         class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none shadow-sm">
                 </div>
+
                 <div class="relative">
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Search Device / Part #</label>
-                    <input list="partsList" id="partNumber" required placeholder="Type model..." 
-                        onchange="updateStockDisplay()"
-                        class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none shadow-sm">
-                    <datalist id="partsList"></datalist>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Select Device / Part #</label>
+                    <select id="partNumber" required onchange="updateStockDisplay()"
+                        class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none shadow-sm appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%20fill%3D%22none%22%20stroke%3D%22%2364748b%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C%2Fpolyline%3E%3C%2Fsvg%3E')] bg-[length:20px] bg-[right_1rem_center] bg-no-repeat cursor-pointer">
+                        <option value="" disabled selected>Choose a part...</option>
+                    </select>
+                    
                     <div id="stockDisplay" class="mt-3 inline-flex items-center px-3 py-1 rounded-full bg-slate-100 text-xs font-bold text-slate-600">
                         In Stock: <span id="stockValue" class="ml-1 text-slate-900">--</span>
                     </div>
                 </div>
+
                 <hr class="border-gray-100">
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Action</label>
@@ -84,6 +90,7 @@
                             class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none text-center font-bold text-lg shadow-sm">
                     </div>
                 </div>
+
                 <button type="submit" id="submitBtn" 
                     class="w-full bg-slate-900 hover:bg-red-600 text-white font-bold py-5 rounded-2xl shadow-xl transition-all active:scale-95 flex justify-center items-center gap-2">
                     <span>SUBMIT ENTRY</span>
@@ -100,15 +107,22 @@
         let inventoryData = [];
 
         window.onload = async () => {
+            // Registro de Service Worker para App
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js').catch(err => console.log(err));
+            }
+
             try {
                 const response = await fetch(SCRIPT_URL);
                 inventoryData = await response.json();
-                const datalist = document.getElementById('partsList');
+                const select = document.getElementById('partNumber');
+                
                 inventoryData.forEach(item => {
                     const option = document.createElement('option');
                     option.value = item.partNumber;
-                    option.textContent = `${item.brand} | ${item.description}`;
-                    datalist.appendChild(option);
+                    // Esto muestra Marca | Modelo | Descripción en el menú
+                    option.textContent = `${item.brand} - ${item.partNumber} (${item.description})`;
+                    select.appendChild(option);
                 });
             } catch (error) {
                 document.getElementById('status-indicator').innerHTML = '<span class="w-2 h-2 bg-red-500 rounded-full"></span> OFFLINE';
@@ -132,7 +146,7 @@
             const btn = document.getElementById('submitBtn');
             const msg = document.getElementById('successMsg');
             btn.disabled = true;
-            btn.innerHTML = 'Loading...';
+            btn.innerHTML = 'Sending...';
 
             const payload = {
                 technician: document.getElementById('technician').value,
@@ -154,25 +168,9 @@
             }
         };
 
-        // REGISTRO DEL SERVICE WORKER
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js', { scope: './' })
-                .then(reg => console.log('SW OK'))
-                .catch(err => console.log('SW Error', err));
-            });
-        }
-        <script>
-  // Registro simplificado al máximo
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js');
-  }
-
-  // Esto fuerza a que aparezca el botón de instalar sin errores
-  window.addEventListener('beforeinstallprompt', (e) => {
-    console.log('Listo para instalar');
-  });
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('App ready to install');
+        });
     </script>
 </body>
 </html>
-
