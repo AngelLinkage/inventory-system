@@ -317,6 +317,13 @@
             if (!q) { dropdown.classList.add('hidden'); return; }
         
             const normalize = s => s.replace(/[-\s]/g, '').toLowerCase();
+
+            // 1. Search by UPC (ignoring dashes and spaces)
+            let match = inventoryData.find(i => i.upc && normalize(i.upc) === normalize(code));
+            
+            // 2. Fallback: exact Part Number match
+            if (!match) match = inventoryData.find(i => i.partNumber.toLowerCase() === code.toLowerCase());
+
         
             const matches = inventoryData.filter(item =>
                 item.partNumber.toLowerCase().includes(q) ||
