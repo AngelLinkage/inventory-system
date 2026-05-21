@@ -1,3 +1,32 @@
+Inserted suggestion 152 Fulton St, White Plains, NY 10606, United StatesNew Message from Angel Monge  Show  Ignore
+
+Skip to content
+Using Linkage Fire and Security Corp Mail with screen readers
+1 of 23
+(no subject)
+External
+Inbox
+Summarize this email
+
+Angel Monge
+12:52 PM (35 minutes ago)
+Conversacion con Claude Yo puedo hacer que mi applicacion de inventario tambien busque palabras clave tanto en la columna C como en la D de este sheet? 12:38 PM
+
+Angel Monge
+Attachments
+1:22 PM (6 minutes ago)
+to me
+
+ 2 Attachments
+  •  Scanned by Gmail
+
+Angel Monge
+Attachments
+1:27 PM (0 minutes ago)
+to me
+
+ One attachment
+  •  Scanned by Gmail
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,11 +36,13 @@
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="https://static.mywebsites360.com/fafa4aabcb704266ab8fdca592e6b118/i/d02ba4221db84af1ad34fa4e1420c4a0/9/4SoifmQp45JMgBnHdjjec/Fire-Alarm-Installation.png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- ZXing barcode/QR scanner -->
+    <script src="https://unpkg.com/@zxing/library@latest/umd/index.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        body { 
-            font-family: 'Inter', sans-serif; 
-            -webkit-tap-highlight-color: transparent; 
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
             background-color: #f8fafc;
             background-image: radial-gradient(#cbd5e1 0.5px, transparent 0.5px);
             background-size: 24px 24px;
@@ -20,7 +51,7 @@
         .loader { border-top-color: #dc2626; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Search dropdown styles */
+        /* Search dropdown */
         #searchDropdown {
             max-height: 260px;
             overflow-y: auto;
@@ -30,49 +61,79 @@
         #searchDropdown::-webkit-scrollbar { width: 4px; }
         #searchDropdown::-webkit-scrollbar-track { background: transparent; }
         #searchDropdown::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+        .dropdown-item { cursor: pointer; transition: background 0.15s; }
+        .dropdown-item:hover, .dropdown-item.highlighted { background-color: #fef2f2; }
+        .match-highlight { background-color: #fecaca; border-radius: 2px; font-weight: 700; }
 
-        .dropdown-item {
-            cursor: pointer;
-            transition: background 0.15s;
+        /* Low stock badge */
+        .low-stock-badge {
+            display: inline-flex; align-items: center; gap: 3px;
+            background: #fef2f2; color: #dc2626;
+            border: 1px solid #fecaca;
+            border-radius: 999px; padding: 1px 6px;
+            font-size: 9px; font-weight: 800; letter-spacing: 0.05em;
         }
-        .dropdown-item:hover, .dropdown-item.highlighted {
-            background-color: #fef2f2;
-        }
-        .match-highlight {
-            background-color: #fecaca;
-            border-radius: 2px;
-            font-weight: 700;
-        }
+        .low-stock-badge::before { content: '⚠'; font-size: 8px; }
 
-        /* Auto-refresh styles */
+        /* Auto-refresh */
         @keyframes pulse-dot {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.4; transform: scale(0.8); }
         }
-        @keyframes spin-refresh {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        .refreshing-dot { animation: pulse-dot 0.8s ease-in-out infinite !important; background-color: #f59e0b !important; box-shadow: 0 0 5px #f59e0b !important; }
+        @keyframes flash-green { 0% { background-color: #dcfce7; } 100% { background-color: #f1f5f9; } }
+        .stock-updated { animation: flash-green 0.6s ease-out; }
+
+        /* History panel */
+        #historyPanel { max-height: 0; overflow: hidden; transition: max-height 0.4s ease; }
+        #historyPanel.open { max-height: 600px; }
+        .history-item { border-left: 3px solid #dc2626; }
+
+        /* QR Scanner modal */
+        #qrModal {
+            display: none; position: fixed; inset: 0; z-index: 100;
+            background: rgba(0,0,0,0.85); align-items: center; justify-content: center;
         }
-        .refreshing-dot {
-            animation: pulse-dot 0.8s ease-in-out infinite !important;
-            background-color: #f59e0b !important;
-            box-shadow: 0 0 5px #f59e0b !important;
+        #qrModal.active { display: flex; }
+        #qr-video { width: 100%; max-width: 360px; border-radius: 16px; background: #000; }
+        .qr-overlay {
+            position: absolute; inset: 0; pointer-events: none;
+            display: flex; align-items: center; justify-content: center;
         }
-        .stock-updated {
-            animation: flash-green 0.6s ease-out;
+        .qr-frame {
+            width: 220px; height: 220px; border-radius: 16px;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.5);
+            border: 2px solid #dc2626;
+            position: relative;
         }
-        @keyframes flash-green {
-            0% { background-color: #dcfce7; }
-            100% { background-color: #f1f5f9; }
+        .qr-frame::before, .qr-frame::after,
+        .qr-frame span::before, .qr-frame span::after {
+            content: ''; position: absolute; width: 24px; height: 24px;
+            border-color: #dc2626; border-style: solid;
+        }
+        .qr-frame::before { top: -2px; left: -2px; border-width: 3px 0 0 3px; border-radius: 8px 0 0 0; }
+        .qr-frame::after  { top: -2px; right: -2px; border-width: 3px 3px 0 0; border-radius: 0 8px 0 0; }
+        .qr-frame span::before { bottom: -2px; left: -2px; border-width: 0 0 3px 3px; border-radius: 0 0 0 8px; }
+        .qr-frame span::after  { bottom: -2px; right: -2px; border-width: 0 3px 3px 0; border-radius: 0 0 8px 0; }
+        @keyframes scan-line {
+            0%   { top: 8px; }
+            100% { top: calc(100% - 8px); }
+        }
+        .qr-scanline {
+            position: absolute; left: 4px; right: 4px; height: 2px;
+            background: linear-gradient(90deg, transparent, #dc2626, transparent);
+            box-shadow: 0 0 8px #dc2626;
+            animation: scan-line 2s linear infinite alternate;
         }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 pb-10">
 
+    <!-- NAV -->
     <nav class="bg-slate-900 text-white p-4 sticky top-0 z-50 shadow-md">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div class="flex items-center gap-4">
-                <img src="https://static.mywebsites360.com/fafa4aabcb704266ab8fdca592e6b118/i/c62c06c2bbe846d2a49a67e52a23a4a6/9/5feFb8zhrk/Logo-Grey.png" 
+                <img src="https://static.mywebsites360.com/fafa4aabcb704266ab8fdca592e6b118/i/c62c06c2bbe846d2a49a67e52a23a4a6/9/5feFb8zhrk/Logo-Grey.png"
                      alt="Linkage Logo" class="h-10 w-auto object-contain">
                 <div class="h-8 w-[1px] bg-slate-700"></div>
                 <div class="flex flex-col">
@@ -80,64 +141,74 @@
                     <span class="text-[9px] uppercase tracking-[0.1em] text-slate-400 font-medium">Control System</span>
                 </div>
             </div>
-            <div id="status-indicator" class="flex items-center gap-1 text-[9px] text-gray-400 font-bold tracking-widest">
-                <span id="status-dot" class="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_5px_#22c55e]"></span>
-                <span id="status-text">LIVE</span>
+            <div class="flex flex-col items-end gap-0.5">
+                <div id="status-indicator" class="flex items-center gap-1 text-[9px] text-gray-400 font-bold tracking-widest">
+                    <span id="status-dot" class="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_5px_#22c55e]"></span>
+                    <span id="status-text">LIVE</span>
+                </div>
+                <div id="last-sync" class="text-[8px] text-slate-500 tracking-wide hidden">synced <span id="sync-time">--</span></div>
             </div>
-            <div id="last-sync" class="text-[8px] text-slate-500 tracking-wide hidden">synced <span id="sync-time">--</span></div>
         </div>
     </nav>
 
+    <!-- MAIN -->
     <main class="max-w-md mx-auto p-5 space-y-6">
         <div class="text-center py-4">
             <h2 class="text-2xl font-bold text-slate-800">Inventory Sync</h2>
             <p class="text-gray-500 text-sm">Register equipment movement</p>
         </div>
 
+        <!-- FORM CARD -->
         <div class="glass-card rounded-3xl shadow-2xl p-6 border border-white">
             <form id="inventoryForm" class="space-y-6">
+
+                <!-- Technician -->
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Technician</label>
-                    <input type="text" id="technician" required placeholder="Full Name" 
+                    <input type="text" id="technician" required placeholder="Full Name"
                         class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none shadow-sm">
                 </div>
 
+                <!-- Job Name -->
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Job Name / Address</label>
-                    <input type="text" id="jobName" required placeholder="Client or Project" 
+                    <input type="text" id="jobName" required placeholder="Client or Project"
                         class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none shadow-sm">
                 </div>
 
-                <!-- ─── SMART SEARCH FIELD (replaces plain <select>) ─── -->
+                <!-- SMART SEARCH + BARCODE -->
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Search Device / Part #</label>
-
-                    <!-- Hidden input that stores the selected partNumber value for form submission -->
                     <input type="hidden" id="partNumber" required>
 
-                    <div class="relative">
-                        <!-- Search input -->
+                    <div class="relative flex gap-2">
                         <input
-                            type="text"
-                            id="partSearch"
-                            autocomplete="off"
-                            placeholder="Type part # or description keyword…"
-                            class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none shadow-sm pr-10"
+                            type="text" id="partSearch" autocomplete="off"
+                            placeholder="Type part # or keyword…"
+                            class="flex-1 p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none shadow-sm pr-10"
                         >
-                        <!-- Clear button -->
                         <button type="button" id="clearSearch"
-                            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 hidden text-xl leading-none"
+                            class="absolute left-[calc(100%-5.5rem)] top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 hidden text-xl leading-none"
                             tabindex="-1">✕</button>
 
-                        <!-- Dropdown results -->
+                        <!-- QR / Barcode scan button -->
+                        <button type="button" id="scanBtn"
+                            class="flex-shrink-0 w-14 bg-slate-800 hover:bg-red-600 text-white rounded-2xl flex items-center justify-center transition-colors active:scale-95 shadow"
+                            title="Scan barcode / QR">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 4h2v2H3V4zm4 0h1v2H7V4zm3 0h1v2h-1V4zm3 0h2v2h-2V4zM3 7h2v1H3V7zM3 10h2v2H3v-2zm4 0h1v1H7v-1zm3 0h1v1h-1v-1zm3 0h2v2h-2v-2zM3 14h2v2H3v-2zm0 4h2v2H3v-2zm4-4h1v2H7v-2zm3 0h1v2h-1v-2zm3 0h2v2h-2v-2zm-3 4h1v2h-1v-2zm3 4h2v-2h-2v2zm0-8h2v2h-2v-2z"/>
+                            </svg>
+                        </button>
+
+                        <!-- Dropdown -->
                         <div id="searchDropdown"
-                            class="hidden absolute z-40 w-full mt-2 bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden">
+                            class="hidden absolute z-40 w-[calc(100%-3.75rem)] mt-2 top-full bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden">
                             <div id="dropdownList" class="divide-y divide-gray-100"></div>
                             <div id="noResults" class="hidden p-4 text-center text-sm text-slate-400">No parts found</div>
                         </div>
                     </div>
 
-                    <!-- Selected part pill -->
+                    <!-- Selected pill -->
                     <div id="selectedPill" class="hidden mt-3 flex items-center gap-2 px-3 py-2 bg-slate-800 text-white rounded-xl text-xs font-semibold">
                         <span id="selectedPillText" class="flex-1 truncate"></span>
                         <button type="button" id="clearPill" class="text-slate-400 hover:text-red-400 text-base leading-none flex-shrink-0">✕</button>
@@ -148,7 +219,6 @@
                         In Stock: <span id="stockValue" class="ml-1 text-slate-900">--</span>
                     </div>
                 </div>
-                <!-- ─── END SMART SEARCH ─── -->
 
                 <hr class="border-gray-100">
 
@@ -162,38 +232,103 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Quantity</label>
-                        <input type="number" id="quantity" required min="1" value="1" 
+                        <input type="number" id="quantity" required min="1" value="1"
                             class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none text-center font-bold text-lg shadow-sm">
                     </div>
                 </div>
 
-                <button type="submit" id="submitBtn" 
+                <button type="submit" id="submitBtn"
                     class="w-full bg-slate-900 hover:bg-red-600 text-white font-bold py-5 rounded-2xl shadow-xl transition-all active:scale-95 flex justify-center items-center gap-2">
                     <span>SUBMIT ENTRY</span>
                 </button>
             </form>
+
             <div id="successMsg" class="hidden mt-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-2xl text-center font-bold animate-bounce">
                 Saved Successfully! ✓
             </div>
         </div>
+
+        <!-- HISTORY PANEL -->
+        <div class="glass-card rounded-3xl shadow-lg border border-white overflow-hidden">
+            <button id="historyToggle" class="w-full flex items-center justify-between px-6 py-4 text-slate-700 hover:bg-slate-50 transition-colors">
+                <div class="flex items-center gap-3">
+                    <span class="text-lg">📋</span>
+                    <div class="text-left">
+                        <div class="text-sm font-bold text-slate-800">My Recent Entries</div>
+                        <div class="text-xs text-slate-400">Last submissions from this device</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="historyCount" class="text-xs bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded-full">0</span>
+                    <svg id="historyChevron" class="w-4 h-4 text-slate-400 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </div>
+            </button>
+            <div id="historyPanel" class="">
+                <div id="historyList" class="px-6 pb-5 space-y-3">
+                    <p class="text-sm text-slate-400 text-center py-4">No entries yet on this device.</p>
+                </div>
+                <div class="px-6 pb-4 flex justify-between items-center border-t border-gray-100 pt-3">
+                    <span class="text-[10px] text-slate-400">Stored locally on this device</span>
+                    <button id="clearHistoryBtn" class="text-[10px] text-red-400 hover:text-red-600 font-semibold">Clear history</button>
+                </div>
+            </div>
+        </div>
+
+
     </main>
+
+    <!-- QR MODAL -->
+    <div id="qrModal">
+        <div class="relative w-full max-w-sm mx-4">
+            <div class="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl">
+                <div class="p-5 border-b border-slate-700 flex items-center justify-between">
+                    <div>
+                        <div class="text-white font-bold text-sm">Scan Barcode / QR</div>
+                        <div class="text-slate-400 text-xs mt-0.5">Point camera at the part label</div>
+                    </div>
+                    <button id="closeQr" class="text-slate-400 hover:text-white text-2xl leading-none">✕</button>
+                </div>
+                <div class="relative bg-black">
+                    <video id="qr-video" autoplay muted playsinline></video>
+                    <div class="qr-overlay">
+                        <div class="qr-frame">
+                            <span></span>
+                            <div class="qr-scanline"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="qrStatus" class="p-4 text-center text-xs text-slate-400">Initializing camera…</div>
+                <div class="px-4 pb-5">
+                    <button id="closeQrBtn" class="w-full py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-semibold transition-colors">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySc9h2_s-WPCRhoUeX8jqU_X7Ic8gvOuxgQkzjRjsqlAEpZxdUzz-aizshxKFjRf5gyQ/exec';
+        const LOW_STOCK_THRESHOLD = 5; // change this to your preferred threshold
+        const HISTORY_KEY = 'linkage_inventory_history';
         let inventoryData = [];
 
-        /* ── helpers ─────────────────────────────────────── */
+        /* ─── HELPERS ─────────────────────────────────────── */
         function escapeHtml(str) {
-            return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+            return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
         }
-
         function highlightMatch(text, query) {
             if (!query) return escapeHtml(text);
             const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
             return escapeHtml(text).replace(regex, '<mark class="match-highlight">$1</mark>');
         }
+        function fmtDate(iso) {
+            const d = new Date(iso);
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' +
+                   d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        }
 
-        /* ── search / dropdown logic ─────────────────────── */
+        /* ─── SEARCH / DROPDOWN ───────────────────────────── */
         const searchInput   = document.getElementById('partSearch');
         const dropdown      = document.getElementById('searchDropdown');
         const dropdownList  = document.getElementById('dropdownList');
@@ -211,11 +346,10 @@
 
             if (!q) { dropdown.classList.add('hidden'); return; }
 
-            // Filter: match in partNumber (col C) OR description (col D)
             const matches = inventoryData.filter(item =>
                 item.partNumber.toLowerCase().includes(q) ||
                 item.description.toLowerCase().includes(q)
-            ).slice(0, 40); // cap results for performance
+            ).slice(0, 40);
 
             if (matches.length === 0) {
                 noResults.classList.remove('hidden');
@@ -224,16 +358,17 @@
             }
 
             matches.forEach(item => {
+                const isLow = item.currentStock <= LOW_STOCK_THRESHOLD;
                 const div = document.createElement('div');
                 div.className = 'dropdown-item px-4 py-3';
                 div.innerHTML = `
-                    <div class="text-xs font-bold text-red-600 tracking-wide">${highlightMatch(item.partNumber, query.trim())}</div>
+                    <div class="flex items-center justify-between gap-2">
+                        <div class="text-xs font-bold text-red-600 tracking-wide">${highlightMatch(item.partNumber, query.trim())}</div>
+                        ${isLow ? `<span class="low-stock-badge">LOW: ${item.currentStock}</span>` : `<span class="text-[10px] text-slate-400 font-semibold">Stock: ${item.currentStock}</span>`}
+                    </div>
                     <div class="text-xs text-slate-600 mt-0.5 leading-snug">${highlightMatch(item.brand, query.trim())} — ${highlightMatch(item.description, query.trim())}</div>
                 `;
-                div.addEventListener('mousedown', (e) => {
-                    e.preventDefault(); // prevent blur before click
-                    selectItem(item);
-                });
+                div.addEventListener('mousedown', e => { e.preventDefault(); selectItem(item); });
                 dropdownList.appendChild(div);
             });
 
@@ -245,16 +380,16 @@
             searchInput.value = '';
             clearBtn.classList.add('hidden');
             dropdown.classList.add('hidden');
-
-            // Show selected pill
             selectedPillText.textContent = `${item.partNumber} — ${item.description}`;
             selectedPill.classList.remove('hidden');
             selectedPill.classList.add('flex');
+            updateStockBadge(item.currentStock);
+        }
 
-            // Update stock
+        function updateStockBadge(stock) {
             const val = document.getElementById('stockValue');
-            val.textContent = item.currentStock;
-            val.className = item.currentStock < 5
+            val.textContent = stock;
+            val.className = stock <= LOW_STOCK_THRESHOLD
                 ? "ml-1 text-red-600 font-black"
                 : "ml-1 text-green-600 font-black";
         }
@@ -271,82 +406,52 @@
         }
 
         searchInput.addEventListener('input', () => {
-            const q = searchInput.value;
-            clearBtn.classList.toggle('hidden', !q);
-            // Clear any previous selection when user types again
-            if (partHidden.value) {
-                partHidden.value = '';
-                selectedPill.classList.add('hidden');
-                selectedPill.classList.remove('flex');
-            }
-            showDropdown(q);
+            clearBtn.classList.toggle('hidden', !searchInput.value);
+            if (partHidden.value) { partHidden.value = ''; selectedPill.classList.add('hidden'); selectedPill.classList.remove('flex'); }
+            showDropdown(searchInput.value);
         });
-
-        searchInput.addEventListener('focus', () => {
-            if (searchInput.value.trim()) showDropdown(searchInput.value);
-        });
-
-        searchInput.addEventListener('blur', () => {
-            setTimeout(() => dropdown.classList.add('hidden'), 150);
-        });
-
+        searchInput.addEventListener('focus', () => { if (searchInput.value.trim()) showDropdown(searchInput.value); });
+        searchInput.addEventListener('blur', () => { setTimeout(() => dropdown.classList.add('hidden'), 150); });
         clearBtn.addEventListener('click', clearSelection);
         clearPill.addEventListener('click', () => { clearSelection(); searchInput.focus(); });
 
-        /* ── init: load inventory ────────────────────────── */
-        const REFRESH_INTERVAL = 30000; // 30 seconds
+        /* ─── AUTO-REFRESH ────────────────────────────────── */
+        const REFRESH_INTERVAL = 30000;
         let refreshTimer = null;
 
         async function fetchInventory(isRefresh = false) {
             const dot  = document.getElementById('status-dot');
             const text = document.getElementById('status-text');
             const lastSync = document.getElementById('last-sync');
-            const syncTime = document.getElementById('sync-time');
 
-            // Show refreshing state
             dot.classList.add('refreshing-dot');
             if (isRefresh) text.textContent = 'SYNCING';
 
             try {
-                const response = await fetch(SCRIPT_URL + '?t=' + Date.now()); // cache-bust
-                const freshData = await response.json();
+                const res = await fetch(SCRIPT_URL + '?t=' + Date.now());
+                const freshData = await res.json();
 
-                // If a part is currently selected, check if its stock changed
                 const selectedPart = partHidden.value;
                 if (selectedPart) {
                     const oldItem = inventoryData.find(i => i.partNumber === selectedPart);
                     const newItem = freshData.find(i => i.partNumber === selectedPart);
                     if (oldItem && newItem && oldItem.currentStock !== newItem.currentStock) {
-                        // Flash the stock badge to signal it changed
                         const stockBadge = document.getElementById('stockDisplay');
                         stockBadge.classList.add('stock-updated');
                         setTimeout(() => stockBadge.classList.remove('stock-updated'), 700);
-
-                        // Update displayed stock value
-                        const val = document.getElementById('stockValue');
-                        val.textContent = newItem.currentStock;
-                        val.className = newItem.currentStock < 5
-                            ? "ml-1 text-red-600 font-black"
-                            : "ml-1 text-green-600 font-black";
+                        updateStockBadge(newItem.currentStock);
                     }
                 }
 
                 inventoryData = freshData;
-
-                // Success state
                 dot.classList.remove('refreshing-dot');
                 dot.style.backgroundColor = '#22c55e';
                 dot.style.boxShadow = '0 0 5px #22c55e';
                 text.textContent = 'LIVE';
-
-                // Show last sync time
                 const now = new Date();
-                const h = now.getHours().toString().padStart(2,'0');
-                const m = now.getMinutes().toString().padStart(2,'0');
-                const s = now.getSeconds().toString().padStart(2,'0');
-                syncTime.textContent = `${h}:${m}:${s}`;
+                document.getElementById('sync-time').textContent =
+                    [now.getHours(), now.getMinutes(), now.getSeconds()].map(n => String(n).padStart(2,'0')).join(':');
                 lastSync.classList.remove('hidden');
-
             } catch {
                 dot.classList.remove('refreshing-dot');
                 dot.style.backgroundColor = '#ef4444';
@@ -356,29 +461,126 @@
             }
         }
 
-        window.onload = async () => {
-            if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('./sw.js').catch(() => {});
+        /* ─── LOCAL HISTORY ───────────────────────────────── */
+        function getHistory() {
+            try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; }
+            catch { return []; }
+        }
+        function saveHistory(h) {
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(h));
+        }
+        function addToHistory(entry) {
+            const h = getHistory();
+            h.unshift({ ...entry, timestamp: new Date().toISOString() });
+            if (h.length > 30) h.splice(30); // keep last 30
+            saveHistory(h);
+            renderHistory();
+        }
+        function renderHistory() {
+            const h = getHistory();
+            const list = document.getElementById('historyList');
+            const count = document.getElementById('historyCount');
+            count.textContent = h.length;
+
+            if (h.length === 0) {
+                list.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">No entries yet on this device.</p>';
+                return;
             }
 
-            // Initial load
-            await fetchInventory(false);
+            list.innerHTML = h.map(item => `
+                <div class="history-item pl-3 py-2 bg-slate-50 rounded-xl">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-black tracking-wide ${item.action === 'OUT' ? 'text-red-500' : 'text-green-600'}">${item.action === 'OUT' ? '↑ OUT' : '↓ IN'} ×${item.quantity}</span>
+                        <span class="text-[9px] text-slate-400">${fmtDate(item.timestamp)}</span>
+                    </div>
+                    <div class="text-xs font-bold text-slate-700 mt-0.5 truncate">${escapeHtml(item.partNumber)}</div>
+                    <div class="text-[10px] text-slate-500 truncate">${escapeHtml(item.technician)} · ${escapeHtml(item.jobName)}</div>
+                </div>
+            `).join('');
+        }
 
-            // Start auto-refresh every 30s
-            refreshTimer = setInterval(() => fetchInventory(true), REFRESH_INTERVAL);
+        document.getElementById('historyToggle').addEventListener('click', () => {
+            const panel = document.getElementById('historyPanel');
+            const chevron = document.getElementById('historyChevron');
+            panel.classList.toggle('open');
+            chevron.style.transform = panel.classList.contains('open') ? 'rotate(180deg)' : '';
+        });
+        document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+            if (confirm('Clear all local history?')) {
+                saveHistory([]);
+                renderHistory();
+            }
+        });
 
-            // Pause refresh when tab is hidden, resume when visible
-            document.addEventListener('visibilitychange', () => {
-                if (document.hidden) {
-                    clearInterval(refreshTimer);
-                } else {
-                    fetchInventory(true); // immediate refresh on tab focus
-                    refreshTimer = setInterval(() => fetchInventory(true), REFRESH_INTERVAL);
+        /* ─── QR / BARCODE SCANNER ────────────────────────── */
+        const qrModal   = document.getElementById('qrModal');
+        const qrVideo   = document.getElementById('qr-video');
+        const qrStatus  = document.getElementById('qrStatus');
+        let codeReader  = null;
+        let scanStream  = null;
+
+        document.getElementById('scanBtn').addEventListener('click', openScanner);
+        document.getElementById('closeQr').addEventListener('click', closeScanner);
+        document.getElementById('closeQrBtn').addEventListener('click', closeScanner);
+
+        function openScanner() {
+            qrModal.classList.add('active');
+            qrStatus.textContent = 'Initializing camera…';
+
+            if (typeof ZXing === 'undefined') {
+                qrStatus.textContent = 'Scanner library not loaded. Check internet connection.';
+                return;
+            }
+
+            const hints = new Map();
+            const formats = [
+                ZXing.BarcodeFormat.QR_CODE,
+                ZXing.BarcodeFormat.CODE_128,
+                ZXing.BarcodeFormat.CODE_39,
+                ZXing.BarcodeFormat.EAN_13,
+                ZXing.BarcodeFormat.EAN_8,
+                ZXing.BarcodeFormat.DATA_MATRIX
+            ];
+            hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, formats);
+            codeReader = new ZXing.BrowserMultiFormatReader(hints);
+
+            codeReader.decodeFromVideoDevice(null, 'qr-video', (result, err) => {
+                if (result) {
+                    const code = result.getText().trim();
+                    // Try to match scanned code to a part number
+                    const match = inventoryData.find(i =>
+                        i.partNumber.toLowerCase() === code.toLowerCase()
+                    );
+
+                    if (match) {
+                        selectItem(match);
+                        qrStatus.textContent = `✓ Found: ${match.partNumber}`;
+                        setTimeout(closeScanner, 800);
+                    } else {
+                        // Paste the code into the search box for manual fallback
+                        searchInput.value = code;
+                        showDropdown(code);
+                        qrStatus.textContent = `Scanned: "${code}" — not matched, showing search results`;
+                        setTimeout(closeScanner, 1200);
+                    }
                 }
+                if (err && !(err instanceof ZXing.NotFoundException)) {
+                    qrStatus.textContent = 'Camera error: ' + err.message;
+                }
+            }).then(stream => {
+                scanStream = stream;
+                qrStatus.textContent = 'Scanning… point at barcode or QR';
+            }).catch(err => {
+                qrStatus.textContent = 'Camera access denied or unavailable.';
             });
-        };
+        }
 
-        /* ── form submit ─────────────────────────────────── */
+        function closeScanner() {
+            if (codeReader) { codeReader.reset(); codeReader = null; }
+            qrModal.classList.remove('active');
+        }
+
+        /* ─── FORM SUBMIT ─────────────────────────────────── */
         document.getElementById('inventoryForm').onsubmit = async (e) => {
             e.preventDefault();
 
@@ -392,7 +594,7 @@
             const btn = document.getElementById('submitBtn');
             const msg = document.getElementById('successMsg');
             btn.disabled = true;
-            btn.innerHTML = 'Sending...';
+            btn.querySelector('span').textContent = 'Sending…';
 
             const payload = {
                 technician: document.getElementById('technician').value,
@@ -404,16 +606,50 @@
 
             try {
                 await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
+
+                // Save to local history
+                addToHistory(payload);
+
                 msg.classList.remove('hidden');
                 document.getElementById('inventoryForm').reset();
                 clearSelection();
-                setTimeout(() => { msg.classList.add('hidden'); location.reload(); }, 3000);
+
+                setTimeout(() => {
+                    msg.classList.add('hidden');
+                    btn.disabled = false;
+                    btn.querySelector('span').textContent = 'SUBMIT ENTRY';
+                    fetchInventory(true);
+                }, 2500);
             } catch {
-                alert('Error connecting to Sheets');
+                alert('Error connecting to Sheets. Check your connection.');
                 btn.disabled = false;
-                btn.innerHTML = 'SUBMIT ENTRY';
+                btn.querySelector('span').textContent = 'SUBMIT ENTRY';
             }
+        };
+
+        /* ─── INIT ────────────────────────────────────────── */
+        window.onload = async () => {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
+            }
+
+            renderHistory();
+            await fetchInventory(false);
+
+            refreshTimer = setInterval(() => fetchInventory(true), REFRESH_INTERVAL);
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    clearInterval(refreshTimer);
+                } else {
+                    fetchInventory(true);
+                    refreshTimer = setInterval(() => fetchInventory(true), REFRESH_INTERVAL);
+                }
+            });
         };
     </script>
 </body>
 </html>
+indexcccc.txt
+PreviousDisplaying indexcccc.txt.
+Dmercado@linkagefire.com
