@@ -1,0 +1,368 @@
+Inserted suggestion 152 Fulton St, White Plains, NY 10606, United StatesYou have 8 new messages.
+
+Skip to content
+Using Linkage Fire and Security Corp Mail with screen readers
+1 of 23
+(no subject)
+External
+Inbox
+Summarize this email
+
+Angel Monge
+12:52 PM (34 minutes ago)
+Conversacion con Claude Yo puedo hacer que mi applicacion de inventario tambien busque palabras clave tanto en la columna C como en la D de este sheet? 12:38 PM
+
+Angel Monge
+Attachments
+1:22 PM (4 minutes ago)
+to me
+
+ 2 Attachments
+  •  Scanned by Gmail
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linkage Fire — Manager Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: #e2e8f0; }
+
+        .glass { background: rgba(30, 41, 59, 0.9); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.07); }
+        .stat-card { background: linear-gradient(135deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.95) 100%); border: 1px solid rgba(255,255,255,0.08); }
+
+        /* Table */
+        table { border-collapse: separate; border-spacing: 0; }
+        thead th { position: sticky; top: 0; z-index: 10; background: #0f172a; }
+        tbody tr:hover td { background: rgba(220, 38, 38, 0.06); }
+        tbody tr td { border-bottom: 1px solid rgba(255,255,255,0.04); }
+
+        /* Stock bar */
+        .stock-bar { background: #1e293b; border-radius: 999px; overflow: hidden; height: 4px; }
+        .stock-bar-fill { height: 4px; border-radius: 999px; transition: width 0.5s ease; }
+
+        /* Scrollable table container */
+        .table-container { overflow-x: auto; overflow-y: auto; max-height: calc(100vh - 320px); }
+        .table-container::-webkit-scrollbar { width: 4px; height: 4px; }
+        .table-container::-webkit-scrollbar-track { background: transparent; }
+        .table-container::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+        /* Badge */
+        .badge-low { background: #450a0a; color: #f87171; border: 1px solid #7f1d1d; }
+        .badge-ok  { background: #052e16; color: #4ade80; border: 1px solid #14532d; }
+        .badge-mid { background: #1c1917; color: #fbbf24; border: 1px solid #451a03; }
+
+        /* Animations */
+        @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
+        .refreshing-dot { animation: pulse-dot .8s ease-in-out infinite !important; background-color: #f59e0b !important; box-shadow: 0 0 5px #f59e0b !important; }
+
+        /* Sort indicators */
+        th.sortable { cursor: pointer; user-select: none; }
+        th.sortable:hover { color: #f87171; }
+        .sort-icon { display: inline-block; margin-left: 4px; opacity: 0.3; }
+        th.sort-asc .sort-icon::after { content: '↑'; opacity: 1; }
+        th.sort-desc .sort-icon::after { content: '↓'; opacity: 1; }
+        th:not(.sort-asc):not(.sort-desc) .sort-icon::after { content: '⇅'; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- NAV -->
+    <nav class="sticky top-0 z-50 border-b border-slate-800" style="background: rgba(15,23,42,0.98); backdrop-filter: blur(16px);">
+        <div class="max-w-screen-xl mx-auto px-6 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-5">
+                <img src="https://static.mywebsites360.com/fafa4aabcb704266ab8fdca592e6b118/i/c62c06c2bbe846d2a49a67e52a23a4a6/9/5feFb8zhrk/Logo-Grey.png"
+                     alt="Linkage" class="h-9 w-auto object-contain">
+                <div class="h-6 w-px bg-slate-700"></div>
+                <div>
+                    <div class="text-[10px] uppercase tracking-[0.3em] text-red-500 font-black">Manager</div>
+                    <div class="text-[9px] uppercase tracking-[0.1em] text-slate-500">Dashboard</div>
+                </div>
+            </div>
+            <div class="flex items-center gap-5">
+                <div class="flex items-center gap-1.5 text-[9px] text-slate-400 font-bold tracking-widest">
+                    <span id="status-dot" class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_#22c55e]"></span>
+                    <span id="status-text">LIVE</span>
+                    <span id="last-sync" class="text-slate-600 ml-1 hidden">· synced <span id="sync-time"></span></span>
+                </div>
+                <a href="index.html" class="text-[10px] text-slate-400 hover:text-white transition-colors font-semibold">← Field App</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-screen-xl mx-auto px-6 py-8 space-y-8">
+
+        <!-- STATS ROW -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="stat-card rounded-2xl p-5">
+                <div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Total Parts</div>
+                <div id="stat-total" class="text-3xl font-black text-white mt-1">—</div>
+                <div class="text-[10px] text-slate-500 mt-1">SKUs tracked</div>
+            </div>
+            <div class="stat-card rounded-2xl p-5">
+                <div class="text-[10px] uppercase tracking-widest text-red-500 font-bold">⚠ Low Stock</div>
+                <div id="stat-low" class="text-3xl font-black text-red-400 mt-1">—</div>
+                <div class="text-[10px] text-slate-500 mt-1">Below threshold</div>
+            </div>
+            <div class="stat-card rounded-2xl p-5">
+                <div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Total Units</div>
+                <div id="stat-units" class="text-3xl font-black text-white mt-1">—</div>
+                <div class="text-[10px] text-slate-500 mt-1">In warehouse</div>
+            </div>
+            <div class="stat-card rounded-2xl p-5">
+                <div class="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Categories</div>
+                <div id="stat-brands" class="text-3xl font-black text-white mt-1">—</div>
+                <div class="text-[10px] text-slate-500 mt-1">Brands / types</div>
+            </div>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="glass rounded-2xl p-4 flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+            <div class="flex gap-3 flex-1 flex-wrap">
+                <!-- Search -->
+                <div class="relative flex-1 min-w-[200px]">
+                    <input type="text" id="filterSearch" placeholder="Search part # or description…"
+                        class="w-full pl-9 pr-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-sm text-slate-200 placeholder-slate-500 focus:ring-2 focus:ring-red-600 outline-none">
+                    <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                <!-- Brand filter -->
+                <select id="filterBrand" class="py-2.5 px-3 bg-slate-800 border border-slate-700 rounded-xl text-sm text-slate-300 outline-none focus:ring-2 focus:ring-red-600">
+                    <option value="">All Brands</option>
+                </select>
+                <!-- Stock filter -->
+                <select id="filterStock" class="py-2.5 px-3 bg-slate-800 border border-slate-700 rounded-xl text-sm text-slate-300 outline-none focus:ring-2 focus:ring-red-600">
+                    <option value="">All Stock Levels</option>
+                    <option value="low">⚠ Low Stock Only</option>
+                    <option value="ok">✓ OK Stock Only</option>
+                </select>
+            </div>
+            <div class="flex gap-2">
+                <button id="refreshBtn" class="flex items-center gap-2 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-bold transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    Refresh
+                </button>
+                <button id="exportBtn" class="flex items-center gap-2 px-4 py-2.5 bg-red-700 hover:bg-red-600 text-white rounded-xl text-xs font-bold transition-colors">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Export CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="glass rounded-2xl overflow-hidden">
+            <div id="tableLoading" class="flex items-center justify-center py-16 gap-3 text-slate-500">
+                <div class="w-5 h-5 border-2 border-slate-600 border-t-red-500 rounded-full animate-spin"></div>
+                <span class="text-sm">Loading inventory…</span>
+            </div>
+            <div id="tableWrap" class="table-container hidden">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-left text-[10px] uppercase tracking-widest text-slate-500 border-b border-slate-800">
+                            <th class="sortable px-5 py-3 font-bold" data-col="partNumber">Part # <span class="sort-icon"></span></th>
+                            <th class="sortable px-5 py-3 font-bold" data-col="brand">Brand <span class="sort-icon"></span></th>
+                            <th class="px-5 py-3 font-bold">Description</th>
+                            <th class="sortable px-5 py-3 font-bold" data-col="currentStock">Stock <span class="sort-icon"></span></th>
+                            <th class="px-5 py-3 font-bold">Level</th>
+                            <th class="px-5 py-3 font-bold">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody"></tbody>
+                </table>
+            </div>
+            <div id="tableEmpty" class="hidden py-12 text-center text-slate-500 text-sm">No results match your filters.</div>
+            <div class="px-5 py-3 border-t border-slate-800 flex items-center justify-between">
+                <span id="rowCount" class="text-[10px] text-slate-500">— items</span>
+                <span class="text-[10px] text-slate-600">Auto-refreshes every 30s</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbySc9h2_s-WPCRhoUeX8jqU_X7Ic8gvOuxgQkzjRjsqlAEpZxdUzz-aizshxKFjRf5gyQ/exec';
+        const LOW_STOCK_THRESHOLD = 5;
+        let allData = [];
+        let sortCol = 'partNumber';
+        let sortDir = 'asc';
+
+        /* ─── FETCH ──────────────────────────────────────── */
+        async function fetchData() {
+            const dot  = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            dot.classList.add('refreshing-dot');
+            text.textContent = 'SYNCING';
+
+            try {
+                const res = await fetch(SCRIPT_URL + '?t=' + Date.now());
+                allData = await res.json();
+
+                dot.classList.remove('refreshing-dot');
+                dot.style.backgroundColor = '#22c55e';
+                dot.style.boxShadow = '0 0 5px #22c55e';
+                text.textContent = 'LIVE';
+
+                const now = new Date();
+                document.getElementById('sync-time').textContent =
+                    [now.getHours(), now.getMinutes(), now.getSeconds()]
+                        .map(n => String(n).padStart(2,'0')).join(':');
+                document.getElementById('last-sync').classList.remove('hidden');
+
+                updateStats();
+                populateBrandFilter();
+                renderTable();
+
+                document.getElementById('tableLoading').classList.add('hidden');
+                document.getElementById('tableWrap').classList.remove('hidden');
+            } catch(err) {
+                dot.classList.remove('refreshing-dot');
+                dot.style.backgroundColor = '#ef4444';
+                dot.style.boxShadow = 'none';
+                text.textContent = 'OFFLINE';
+            }
+        }
+
+        /* ─── STATS ──────────────────────────────────────── */
+        function updateStats() {
+            document.getElementById('stat-total').textContent  = allData.length;
+            document.getElementById('stat-low').textContent    = allData.filter(i => i.currentStock <= LOW_STOCK_THRESHOLD).length;
+            document.getElementById('stat-units').textContent  = allData.reduce((s, i) => s + (parseInt(i.currentStock) || 0), 0).toLocaleString();
+            document.getElementById('stat-brands').textContent = new Set(allData.map(i => i.brand).filter(Boolean)).size;
+        }
+
+        /* ─── BRAND FILTER ───────────────────────────────── */
+        function populateBrandFilter() {
+            const brands = [...new Set(allData.map(i => i.brand).filter(Boolean))].sort();
+            const sel = document.getElementById('filterBrand');
+            const cur = sel.value;
+            sel.innerHTML = '<option value="">All Brands</option>' +
+                brands.map(b => `<option value="${b}" ${b === cur ? 'selected' : ''}>${b}</option>`).join('');
+        }
+
+        /* ─── RENDER TABLE ───────────────────────────────── */
+        function getFiltered() {
+            const q     = document.getElementById('filterSearch').value.trim().toLowerCase();
+            const brand = document.getElementById('filterBrand').value;
+            const stock = document.getElementById('filterStock').value;
+
+            return allData.filter(item => {
+                if (q && !item.partNumber.toLowerCase().includes(q) && !item.description.toLowerCase().includes(q)) return false;
+                if (brand && item.brand !== brand) return false;
+                if (stock === 'low' && item.currentStock > LOW_STOCK_THRESHOLD) return false;
+                if (stock === 'ok'  && item.currentStock <= LOW_STOCK_THRESHOLD) return false;
+                return true;
+            }).sort((a, b) => {
+                const va = sortDir === 'asc' ? a[sortCol] : b[sortCol];
+                const vb = sortDir === 'asc' ? b[sortCol] : a[sortCol];
+                if (sortCol === 'currentStock') return (parseInt(va)||0) - (parseInt(vb)||0);
+                return String(va||'').localeCompare(String(vb||''));
+            });
+        }
+
+        function renderTable() {
+            const data = getFiltered();
+            const tbody = document.getElementById('inventoryTableBody');
+            const empty = document.getElementById('tableEmpty');
+            const wrap  = document.getElementById('tableWrap');
+            const rowCount = document.getElementById('rowCount');
+
+            rowCount.textContent = `${data.length} item${data.length !== 1 ? 's' : ''}`;
+
+            if (data.length === 0) {
+                tbody.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            const maxStock = Math.max(...allData.map(i => parseInt(i.currentStock) || 0), 1);
+
+            tbody.innerHTML = data.map(item => {
+                const stock  = parseInt(item.currentStock) || 0;
+                const pct    = Math.min(100, (stock / maxStock) * 100);
+                const isLow  = stock <= LOW_STOCK_THRESHOLD;
+                const isMid  = stock <= LOW_STOCK_THRESHOLD * 2 && !isLow;
+                const barClr = isLow ? '#ef4444' : isMid ? '#f59e0b' : '#22c55e';
+                const badge  = isLow
+                    ? `<span class="badge-low inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black tracking-wide">⚠ LOW</span>`
+                    : `<span class="badge-ok  inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-black tracking-wide">✓ OK</span>`;
+
+                return `<tr>
+                    <td class="px-5 py-3 font-bold text-red-400 whitespace-nowrap">${escapeHtml(item.partNumber)}</td>
+                    <td class="px-5 py-3 text-slate-400 whitespace-nowrap text-xs">${escapeHtml(item.brand || '—')}</td>
+                    <td class="px-5 py-3 text-slate-300 max-w-xs text-xs leading-snug">${escapeHtml(item.description || '—')}</td>
+                    <td class="px-5 py-3 font-black ${isLow ? 'text-red-400' : isMid ? 'text-yellow-400' : 'text-green-400'} whitespace-nowrap">${stock}</td>
+                    <td class="px-5 py-3 min-w-[100px]">
+                        <div class="stock-bar w-24">
+                            <div class="stock-bar-fill" style="width:${pct.toFixed(1)}%;background:${barClr}"></div>
+                        </div>
+                    </td>
+                    <td class="px-5 py-3">${badge}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function escapeHtml(str) {
+            return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+        }
+
+        /* ─── SORT ───────────────────────────────────────── */
+        document.querySelectorAll('th.sortable').forEach(th => {
+            th.addEventListener('click', () => {
+                const col = th.dataset.col;
+                if (sortCol === col) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
+                else { sortCol = col; sortDir = 'asc'; }
+
+                document.querySelectorAll('th.sortable').forEach(t => t.classList.remove('sort-asc','sort-desc'));
+                th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+                renderTable();
+            });
+        });
+
+        /* ─── FILTERS ────────────────────────────────────── */
+        ['filterSearch', 'filterBrand', 'filterStock'].forEach(id => {
+            document.getElementById(id).addEventListener('input', renderTable);
+        });
+
+        /* ─── EXPORT CSV ─────────────────────────────────── */
+        document.getElementById('exportBtn').addEventListener('click', () => {
+            const data = getFiltered();
+            const headers = ['Part Number', 'Brand', 'Description', 'Current Stock', 'Status'];
+            const rows = data.map(item => [
+                item.partNumber, item.brand, item.description, item.currentStock,
+                item.currentStock <= LOW_STOCK_THRESHOLD ? 'LOW' : 'OK'
+            ]);
+            const csvContent = [headers, ...rows]
+                .map(r => r.map(v => `"${String(v||'').replace(/"/g,'""')}"`).join(','))
+                .join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            const ts   = new Date().toISOString().slice(0,10);
+            a.href = url; a.download = `linkage-inventory-${ts}.csv`;
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        /* ─── REFRESH BUTTON ─────────────────────────────── */
+        document.getElementById('refreshBtn').addEventListener('click', fetchData);
+
+        /* ─── INIT ───────────────────────────────────────── */
+        fetchData();
+        setInterval(fetchData, 30000);
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) fetchData();
+        });
+    </script>
+</body>
+</html>
+dasboarddd.txt
+PreviousDisplaying dasboarddd.txt.
+Dmercado@linkagefire.com
