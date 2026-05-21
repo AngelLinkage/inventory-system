@@ -43,6 +43,28 @@
             border-radius: 2px;
             font-weight: 700;
         }
+
+        /* Auto-refresh styles */
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+        @keyframes spin-refresh {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .refreshing-dot {
+            animation: pulse-dot 0.8s ease-in-out infinite !important;
+            background-color: #f59e0b !important;
+            box-shadow: 0 0 5px #f59e0b !important;
+        }
+        .stock-updated {
+            animation: flash-green 0.6s ease-out;
+        }
+        @keyframes flash-green {
+            0% { background-color: #dcfce7; }
+            100% { background-color: #f1f5f9; }
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-900 pb-10">
@@ -59,8 +81,10 @@
                 </div>
             </div>
             <div id="status-indicator" class="flex items-center gap-1 text-[9px] text-gray-400 font-bold tracking-widest">
-                <span class="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_5px_#22c55e]"></span> LIVE
+                <span id="status-dot" class="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_5px_#22c55e]"></span>
+                <span id="status-text">LIVE</span>
             </div>
+            <div id="last-sync" class="text-[8px] text-slate-500 tracking-wide hidden">synced <span id="sync-time">--</span></div>
         </div>
     </nav>
 
@@ -270,17 +294,88 @@
         clearPill.addEventListener('click', () => { clearSelection(); searchInput.focus(); });
 
         /* ── init: load inventory ────────────────────────── */
+        const REFRESH_INTERVAL = 30000; // 30 seconds
+        let refreshTimer = null;
+
+        async function fetchInventory(isRefresh = false) {
+            const dot  = document.getElementById('status-dot');
+            const text = document.getElementById('status-text');
+            const lastSync = document.getElementById('last-sync');
+            const syncTime = document.getElementById('sync-time');
+
+            // Show refreshing state
+            dot.classList.add('refreshing-dot');
+            if (isRefresh) text.textContent = 'SYNCING';
+
+            try {
+                const response = await fetch(SCRIPT_URL + '?t=' + Date.now()); // cache-bust
+                const freshData = await response.json();
+
+                // If a part is currently selected, check if its stock changed
+                const selectedPart = partHidden.value;
+                if (selectedPart) {
+                    const oldItem = inventoryData.find(i => i.partNumber === selectedPart);
+                    const newItem = freshData.find(i => i.partNumber === selectedPart);
+                    if (oldItem && newItem && oldItem.currentStock !== newItem.currentStock) {
+                        // Flash the stock badge to signal it changed
+                        const stockBadge = document.getElementById('stockDisplay');
+                        stockBadge.classList.add('stock-updated');
+                        setTimeout(() => stockBadge.classList.remove('stock-updated'), 700);
+
+                        // Update displayed stock value
+                        const val = document.getElementById('stockValue');
+                        val.textContent = newItem.currentStock;
+                        val.className = newItem.currentStock < 5
+                            ? "ml-1 text-red-600 font-black"
+                            : "ml-1 text-green-600 font-black";
+                    }
+                }
+
+                inventoryData = freshData;
+
+                // Success state
+                dot.classList.remove('refreshing-dot');
+                dot.style.backgroundColor = '#22c55e';
+                dot.style.boxShadow = '0 0 5px #22c55e';
+                text.textContent = 'LIVE';
+
+                // Show last sync time
+                const now = new Date();
+                const h = now.getHours().toString().padStart(2,'0');
+                const m = now.getMinutes().toString().padStart(2,'0');
+                const s = now.getSeconds().toString().padStart(2,'0');
+                syncTime.textContent = `${h}:${m}:${s}`;
+                lastSync.classList.remove('hidden');
+
+            } catch {
+                dot.classList.remove('refreshing-dot');
+                dot.style.backgroundColor = '#ef4444';
+                dot.style.boxShadow = 'none';
+                text.textContent = 'OFFLINE';
+                lastSync.classList.add('hidden');
+            }
+        }
+
         window.onload = async () => {
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('./sw.js').catch(() => {});
             }
-            try {
-                const response = await fetch(SCRIPT_URL);
-                inventoryData = await response.json();
-            } catch {
-                document.getElementById('status-indicator').innerHTML =
-                    '<span class="w-2 h-2 bg-red-500 rounded-full"></span> OFFLINE';
-            }
+
+            // Initial load
+            await fetchInventory(false);
+
+            // Start auto-refresh every 30s
+            refreshTimer = setInterval(() => fetchInventory(true), REFRESH_INTERVAL);
+
+            // Pause refresh when tab is hidden, resume when visible
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    clearInterval(refreshTimer);
+                } else {
+                    fetchInventory(true); // immediate refresh on tab focus
+                    refreshTimer = setInterval(() => fetchInventory(true), REFRESH_INTERVAL);
+                }
+            });
         };
 
         /* ── form submit ─────────────────────────────────── */
