@@ -315,16 +315,35 @@
             dropdownList.innerHTML = '';
             noResults.classList.add('hidden');
             if (!q) { dropdown.classList.add('hidden'); return; }
+        
+            const normalize = s => s.replace(/[-\s]/g, '').toLowerCase();
+        
             const matches = inventoryData.filter(item =>
                 item.partNumber.toLowerCase().includes(q) ||
                 item.description.toLowerCase().includes(q) ||
-                (item.upc && item.upc.toString().includes(q))
+                (item.upc && normalize(item.upc).includes(normalize(query.trim())))
             ).slice(0, 40);
+        
             if (matches.length === 0) {
-                noResults.classList.remove('hidden');
+                // Show "no results" + "Add new part" button
+                dropdownList.innerHTML = `
+                    <div class="p-4 text-center space-y-3">
+                        <p class="text-sm text-slate-400">No parts found for "<strong>${escapeHtml(query.trim())}</strong>"</p>
+                        <button type="button" id="addNewFromSearch"
+                            class="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition-colors">
+                            + Add New Part
+                        </button>
+                    </div>
+                `;
+                document.getElementById('addNewFromSearch').addEventListener('mousedown', e => {
+                    e.preventDefault();
+                    dropdown.classList.add('hidden');
+                    openNewPartModal(query.trim());
+                });
                 dropdown.classList.remove('hidden');
                 return;
             }
+        
             matches.forEach(item => {
                 const isLow = item.currentStock !== null && item.currentStock <= LOW_STOCK_THRESHOLD;
                 const div = document.createElement('div');
