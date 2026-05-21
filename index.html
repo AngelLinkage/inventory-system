@@ -12,7 +12,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; background-color: #f8fafc; background-image: radial-gradient(#cbd5e1 0.5px, transparent 0.5px); background-size: 24px 24px; }
         .glass-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); }
-        @keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
         #searchDropdown { max-height: 260px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
         #searchDropdown::-webkit-scrollbar { width: 4px; }
         #searchDropdown::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
@@ -28,8 +27,6 @@
         #historyPanel { max-height:0; overflow:hidden; transition:max-height .4s ease; }
         #historyPanel.open { max-height:600px; }
         .history-item { border-left:3px solid #dc2626; }
-
-        /* QR Modal */
         #qrModal { display:none; position:fixed; inset:0; z-index:100; background:rgba(0,0,0,0.85); align-items:center; justify-content:center; }
         #qrModal.active { display:flex; }
         #qr-video { width:100%; max-width:360px; border-radius:16px; background:#000; }
@@ -42,8 +39,6 @@
         .qr-frame span::after  { bottom:-2px; right:-2px; border-width:0 3px 3px 0; border-radius:0 0 8px 0; }
         @keyframes scan-line { 0%{top:8px} 100%{top:calc(100% - 8px)} }
         .qr-scanline { position:absolute; left:4px; right:4px; height:2px; background:linear-gradient(90deg,transparent,#dc2626,transparent); box-shadow:0 0 8px #dc2626; animation:scan-line 2s linear infinite alternate; }
-
-        /* New Part Modal */
         #newPartModal { display:none; position:fixed; inset:0; z-index:110; background:rgba(0,0,0,0.7); align-items:flex-end; justify-content:center; }
         #newPartModal.active { display:flex; }
         #newPartSheet { transform:translateY(100%); transition:transform .35s cubic-bezier(.32,.72,0,1); }
@@ -52,7 +47,6 @@
 </head>
 <body class="bg-gray-100 text-gray-900 pb-10">
 
-    <!-- NAV -->
     <nav class="bg-slate-900 text-white p-4 sticky top-0 z-50 shadow-md">
         <div class="max-w-md mx-auto flex justify-between items-center">
             <div class="flex items-center gap-4">
@@ -64,7 +58,7 @@
                 </div>
             </div>
             <div class="flex flex-col items-end gap-0.5">
-                <div id="status-indicator" class="flex items-center gap-1 text-[9px] text-gray-400 font-bold tracking-widest">
+                <div class="flex items-center gap-1 text-[9px] text-gray-400 font-bold tracking-widest">
                     <span id="status-dot" class="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_5px_#22c55e]"></span>
                     <span id="status-text">LIVE</span>
                 </div>
@@ -73,7 +67,6 @@
         </div>
     </nav>
 
-    <!-- MAIN -->
     <main class="max-w-md mx-auto p-5 space-y-6">
         <div class="text-center py-4">
             <h2 class="text-2xl font-bold text-slate-800">Inventory Sync</h2>
@@ -82,51 +75,38 @@
 
         <div class="glass-card rounded-3xl shadow-2xl p-6 border border-white">
             <form id="inventoryForm" class="space-y-6">
-
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Technician</label>
-                    <input type="text" id="technician" required placeholder="Full Name"
-                        class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none shadow-sm">
+                    <input type="text" id="technician" required placeholder="Full Name" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none shadow-sm">
                 </div>
-
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Job Name / Address</label>
-                    <input type="text" id="jobName" required placeholder="Client or Project"
-                        class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none shadow-sm">
+                    <input type="text" id="jobName" required placeholder="Client or Project" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none shadow-sm">
                 </div>
-
-                <!-- SMART SEARCH + SCAN -->
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Search Device / Part #</label>
                     <input type="hidden" id="partNumber" required>
                     <div class="relative flex gap-2">
-                        <input type="text" id="partSearch" autocomplete="off" placeholder="Type part # or keyword…"
-                            class="flex-1 p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none shadow-sm">
-                        <button type="button" id="clearSearch"
-                            class="absolute right-[3.75rem] top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 hidden text-xl leading-none" tabindex="-1">✕</button>
-                        <button type="button" id="scanBtn"
-                            class="flex-shrink-0 w-14 bg-slate-800 hover:bg-red-600 text-white rounded-2xl flex items-center justify-center transition-colors active:scale-95 shadow" title="Scan barcode / QR">
+                        <input type="text" id="partSearch" autocomplete="off" placeholder="Type part #, keyword or UPC…" class="flex-1 p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none shadow-sm">
+                        <button type="button" id="clearSearch" class="absolute right-[3.75rem] top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 hidden text-xl leading-none" tabindex="-1">&#x2715;</button>
+                        <button type="button" id="scanBtn" class="flex-shrink-0 w-14 bg-slate-800 hover:bg-red-600 text-white rounded-2xl flex items-center justify-center transition-colors active:scale-95 shadow" title="Scan barcode / QR">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 4h2v2H3V4zm4 0h1v2H7V4zm3 0h1v2h-1V4zm3 0h2v2h-2V4zM3 7h2v1H3V7zM3 10h2v2H3v-2zm4 0h1v1H7v-1zm3 0h1v1h-1v-1zm3 0h2v2h-2v-2zM3 14h2v2H3v-2zm0 4h2v2H3v-2zm4-4h1v2H7v-2zm3 0h1v2h-1v-2zm3 0h2v2h-2v-2zm-3 4h1v2h-1v-2zm3 4h2v-2h-2v2zm0-8h2v2h-2v-2z"/>
                             </svg>
                         </button>
-                        <div id="searchDropdown"
-                            class="hidden absolute z-40 w-[calc(100%-3.75rem)] mt-2 top-full bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden">
+                        <div id="searchDropdown" class="hidden absolute z-40 w-[calc(100%-3.75rem)] mt-2 top-full bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden">
                             <div id="dropdownList" class="divide-y divide-gray-100"></div>
-                            <div id="noResults" class="hidden p-4 text-center text-sm text-slate-400">No parts found</div>
                         </div>
                     </div>
                     <div id="selectedPill" class="hidden mt-3 flex items-center gap-2 px-3 py-2 bg-slate-800 text-white rounded-xl text-xs font-semibold">
                         <span id="selectedPillText" class="flex-1 truncate"></span>
-                        <button type="button" id="clearPill" class="text-slate-400 hover:text-red-400 text-base leading-none flex-shrink-0">✕</button>
+                        <button type="button" id="clearPill" class="text-slate-400 hover:text-red-400 text-base leading-none flex-shrink-0">&#x2715;</button>
                     </div>
                     <div id="stockDisplay" class="mt-3 inline-flex items-center px-3 py-1 rounded-full bg-slate-100 text-xs font-bold text-slate-600">
                         In Stock: <span id="stockValue" class="ml-1 text-slate-900">--</span>
                     </div>
                 </div>
-
                 <hr class="border-gray-100">
-
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Action</label>
@@ -137,26 +117,20 @@
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Quantity</label>
-                        <input type="number" id="quantity" required min="1" value="1"
-                            class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none text-center font-bold text-lg shadow-sm">
+                        <input type="number" id="quantity" required min="1" value="1" class="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 outline-none text-center font-bold text-lg shadow-sm">
                     </div>
                 </div>
-
-                <button type="submit" id="submitBtn"
-                    class="w-full bg-slate-900 hover:bg-red-600 text-white font-bold py-5 rounded-2xl shadow-xl transition-all active:scale-95 flex justify-center items-center gap-2">
+                <button type="submit" id="submitBtn" class="w-full bg-slate-900 hover:bg-red-600 text-white font-bold py-5 rounded-2xl shadow-xl transition-all active:scale-95 flex justify-center items-center gap-2">
                     <span>SUBMIT ENTRY</span>
                 </button>
             </form>
-            <div id="successMsg" class="hidden mt-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-2xl text-center font-bold animate-bounce">
-                Saved Successfully! ✓
-            </div>
+            <div id="successMsg" class="hidden mt-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-2xl text-center font-bold animate-bounce">Saved Successfully! &#x2713;</div>
         </div>
 
-        <!-- HISTORY -->
         <div class="glass-card rounded-3xl shadow-lg border border-white overflow-hidden">
             <button id="historyToggle" class="w-full flex items-center justify-between px-6 py-4 text-slate-700 hover:bg-slate-50 transition-colors">
                 <div class="flex items-center gap-3">
-                    <span class="text-lg">📋</span>
+                    <span class="text-lg">&#x1F4CB;</span>
                     <div class="text-left">
                         <div class="text-sm font-bold text-slate-800">My Recent Entries</div>
                         <div class="text-xs text-slate-400">Last submissions from this device</div>
@@ -164,9 +138,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <span id="historyCount" class="text-xs bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded-full">0</span>
-                    <svg id="historyChevron" class="w-4 h-4 text-slate-400 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                    </svg>
+                    <svg id="historyChevron" class="w-4 h-4 text-slate-400 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                 </div>
             </button>
             <div id="historyPanel">
@@ -181,7 +153,6 @@
         </div>
     </main>
 
-    <!-- QR MODAL -->
     <div id="qrModal">
         <div class="relative w-full max-w-sm mx-4">
             <div class="bg-slate-900 rounded-3xl overflow-hidden shadow-2xl">
@@ -190,15 +161,13 @@
                         <div class="text-white font-bold text-sm">Scan Barcode / QR</div>
                         <div class="text-slate-400 text-xs mt-0.5">Point camera at the part label</div>
                     </div>
-                    <button id="closeQr" class="text-slate-400 hover:text-white text-2xl leading-none">✕</button>
+                    <button id="closeQr" class="text-slate-400 hover:text-white text-2xl leading-none">&#x2715;</button>
                 </div>
                 <div class="relative bg-black">
                     <video id="qr-video" autoplay muted playsinline></video>
-                    <div class="qr-overlay">
-                        <div class="qr-frame"><span></span><div class="qr-scanline"></div></div>
-                    </div>
+                    <div class="qr-overlay"><div class="qr-frame"><span></span><div class="qr-scanline"></div></div></div>
                 </div>
-                <div id="qrStatus" class="p-4 text-center text-xs text-slate-400">Initializing camera…</div>
+                <div id="qrStatus" class="p-4 text-center text-xs text-slate-400">Initializing camera&#x2026;</div>
                 <div class="px-4 pb-5">
                     <button id="closeQrBtn" class="w-full py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-semibold transition-colors">Cancel</button>
                 </div>
@@ -206,7 +175,6 @@
         </div>
     </div>
 
-    <!-- NEW PART MODAL (bottom sheet) -->
     <div id="newPartModal">
         <div id="newPartSheet" class="w-full max-w-md bg-white rounded-t-3xl shadow-2xl overflow-hidden">
             <div class="flex items-center justify-between px-6 pt-5 pb-4 border-b border-gray-100">
@@ -214,64 +182,50 @@
                     <div class="text-base font-black text-slate-800">Part Not Found</div>
                     <div class="text-xs text-slate-400 mt-0.5">Add it to the inventory catalog</div>
                 </div>
-                <button id="closeNewPart" class="text-slate-400 hover:text-red-500 text-2xl leading-none">✕</button>
+                <button id="closeNewPart" class="text-slate-400 hover:text-red-500 text-2xl leading-none">&#x2715;</button>
             </div>
-
-            <!-- Scanned code display -->
-            <div id="scannedCodeBar" class="mx-6 mt-4 px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-3">
-                <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.24M16.97 7l.01-.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                </svg>
+            <div class="mx-6 mt-4 px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-3">
+                <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.24M16.97 7l.01-.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <div>
                     <div class="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Scanned Code / UPC</div>
                     <div id="scannedCodeValue" class="text-sm font-bold text-slate-700 mt-0.5"></div>
                 </div>
             </div>
-
             <form id="newPartForm" class="px-6 pb-6 pt-4 space-y-4 overflow-y-auto" style="max-height:65vh">
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Brand *</label>
-                        <input type="text" id="np-brand" required placeholder="e.g. Kidde"
-                            class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none text-sm">
+                        <input type="text" id="np-brand" required placeholder="e.g. Kidde" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none text-sm">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Category *</label>
-                        <input type="text" id="np-category" required placeholder="e.g. Detectors"
-                            class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none text-sm">
+                        <input type="text" id="np-category" required placeholder="e.g. Detectors" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none text-sm">
                     </div>
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Part Number *</label>
-                    <input type="text" id="np-partNumber" required placeholder="e.g. OP921"
-                        class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none text-sm font-bold">
+                    <input type="text" id="np-partNumber" required placeholder="e.g. OP921" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none text-sm font-bold">
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Description *</label>
-                    <input type="text" id="np-description" required placeholder="e.g. Optical Smoke Detector"
-                        class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none text-sm">
+                    <input type="text" id="np-description" required placeholder="e.g. Optical Smoke Detector" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none text-sm">
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">UPC / Barcode</label>
-                    <input type="text" id="np-upc" placeholder="Auto-filled from scan"
-                        class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm text-slate-500 font-mono" readonly>
+                    <input type="text" id="np-upc" placeholder="Auto-filled from scan" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none text-sm text-slate-500 font-mono" readonly>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Cost Price <span class="normal-case text-slate-300">(optional)</span></label>
-                        <input type="number" id="np-costPrice" placeholder="0.00" step="0.01"
-                            class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none text-sm">
+                        <input type="number" id="np-costPrice" placeholder="0.00" step="0.01" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none text-sm">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Sale Price <span class="normal-case text-slate-300">(optional)</span></label>
-                        <input type="number" id="np-salePrice" placeholder="0.00" step="0.01"
-                            class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none text-sm">
+                        <input type="number" id="np-salePrice" placeholder="0.00" step="0.01" class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 outline-none text-sm">
                     </div>
                 </div>
-
-                <button type="submit" id="newPartSubmitBtn"
-                    class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
-                    <span>Save & Add to Inventory</span>
+                <button type="submit" id="newPartSubmitBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 rounded-2xl shadow-lg transition-all active:scale-95 flex justify-center items-center gap-2">
+                    <span>Save &amp; Add to Inventory</span>
                 </button>
                 <p class="text-[10px] text-center text-slate-400">This part will be added to All_Parts and Master_Inventory automatically.</p>
             </form>
@@ -284,26 +238,24 @@
         const HISTORY_KEY = 'linkage_inventory_history';
         let inventoryData = [];
 
-        /* ─── HELPERS ─────────────────────────────────── */
         function escapeHtml(str) {
             return String(str).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
         }
         function highlightMatch(text, query) {
             if (!query) return escapeHtml(text);
-            const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+            const regex = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
             return escapeHtml(text).replace(regex, '<mark class="match-highlight">$1</mark>');
         }
         function fmtDate(iso) {
             const d = new Date(iso);
-            return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' ' +
-                   d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+            return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' ' + d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
         }
+        // Normalize UPC: strip dashes and spaces so "7-93017-00708" matches "793017000708"
+        const normalize = s => String(s).replace(/[-\s]/g,'').toLowerCase();
 
-        /* ─── SEARCH / DROPDOWN ───────────────────────── */
         const searchInput      = document.getElementById('partSearch');
         const dropdown         = document.getElementById('searchDropdown');
         const dropdownList     = document.getElementById('dropdownList');
-        const noResults        = document.getElementById('noResults');
         const clearBtn         = document.getElementById('clearSearch');
         const partHidden       = document.getElementById('partNumber');
         const selectedPill     = document.getElementById('selectedPill');
@@ -313,36 +265,21 @@
         function showDropdown(query) {
             const q = query.trim().toLowerCase();
             dropdownList.innerHTML = '';
-            noResults.classList.add('hidden');
             if (!q) { dropdown.classList.add('hidden'); return; }
-        
-            const normalize = s => s.replace(/[-\s]/g, '').toLowerCase();
 
-            // 1. Search by UPC (ignoring dashes and spaces)
-            let match = inventoryData.find(i => i.upc && normalize(i.upc) === normalize(code));
-            
-            // 2. Fallback: exact Part Number match
-            if (!match) match = inventoryData.find(i => i.partNumber.toLowerCase() === code.toLowerCase());
+            const matches = inventoryData.filter(function(item) {
+                return item.partNumber.toLowerCase().includes(q) ||
+                       item.description.toLowerCase().includes(q) ||
+                       (item.upc && normalize(item.upc).includes(normalize(q)));
+            }).slice(0, 40);
 
-        
-            const matches = inventoryData.filter(item =>
-                item.partNumber.toLowerCase().includes(q) ||
-                item.description.toLowerCase().includes(q) ||
-                (item.upc && normalize(item.upc).includes(normalize(query.trim())))
-            ).slice(0, 40);
-        
             if (matches.length === 0) {
-                // Show "no results" + "Add new part" button
-                dropdownList.innerHTML = `
-                    <div class="p-4 text-center space-y-3">
-                        <p class="text-sm text-slate-400">No parts found for "<strong>${escapeHtml(query.trim())}</strong>"</p>
-                        <button type="button" id="addNewFromSearch"
-                            class="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition-colors">
-                            + Add New Part
-                        </button>
-                    </div>
-                `;
-                document.getElementById('addNewFromSearch').addEventListener('mousedown', e => {
+                dropdownList.innerHTML =
+                    '<div class="p-4 text-center space-y-3">' +
+                    '<p class="text-sm text-slate-400">No parts found for "<strong>' + escapeHtml(query.trim()) + '</strong>"</p>' +
+                    '<button type="button" id="addNewFromSearch" class="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-xl transition-colors">+ Add New Part</button>' +
+                    '</div>';
+                document.getElementById('addNewFromSearch').addEventListener('mousedown', function(e) {
                     e.preventDefault();
                     dropdown.classList.add('hidden');
                     openNewPartModal(query.trim());
@@ -350,24 +287,22 @@
                 dropdown.classList.remove('hidden');
                 return;
             }
-        
-            matches.forEach(item => {
-                const isLow = item.currentStock !== null && item.currentStock <= LOW_STOCK_THRESHOLD;
-                const div = document.createElement('div');
+
+            matches.forEach(function(item) {
+                var isLow = item.currentStock !== null && item.currentStock <= LOW_STOCK_THRESHOLD;
+                var stockBadge = item.currentStock === null
+                    ? '<span class="text-[10px] text-slate-300 font-semibold">No stock tracked</span>'
+                    : isLow
+                        ? '<span class="low-stock-badge">LOW: ' + item.currentStock + '</span>'
+                        : '<span class="text-[10px] text-slate-400 font-semibold">Stock: ' + item.currentStock + '</span>';
+                var div = document.createElement('div');
                 div.className = 'dropdown-item px-4 py-3';
-                div.innerHTML = `
-                    <div class="flex items-center justify-between gap-2">
-                        <div class="text-xs font-bold text-red-600 tracking-wide">${highlightMatch(item.partNumber, query.trim())}</div>
-                        ${item.currentStock === null
-                            ? '<span class="text-[10px] text-slate-300 font-semibold">No stock tracked</span>'
-                            : isLow
-                                ? `<span class="low-stock-badge">LOW: ${item.currentStock}</span>`
-                                : `<span class="text-[10px] text-slate-400 font-semibold">Stock: ${item.currentStock}</span>`
-                        }
-                    </div>
-                    <div class="text-xs text-slate-600 mt-0.5 leading-snug">${highlightMatch(item.brand, query.trim())} — ${highlightMatch(item.description, query.trim())}</div>
-                `;
-                div.addEventListener('mousedown', e => { e.preventDefault(); selectItem(item); });
+                div.innerHTML =
+                    '<div class="flex items-center justify-between gap-2">' +
+                    '<div class="text-xs font-bold text-red-600 tracking-wide">' + highlightMatch(item.partNumber, query.trim()) + '</div>' +
+                    stockBadge + '</div>' +
+                    '<div class="text-xs text-slate-600 mt-0.5 leading-snug">' + highlightMatch(item.brand, query.trim()) + ' - ' + highlightMatch(item.description, query.trim()) + '</div>';
+                div.addEventListener('mousedown', function(e) { e.preventDefault(); selectItem(item); });
                 dropdownList.appendChild(div);
             });
             dropdown.classList.remove('hidden');
@@ -378,17 +313,16 @@
             searchInput.value = '';
             clearBtn.classList.add('hidden');
             dropdown.classList.add('hidden');
-            selectedPillText.textContent = `${item.partNumber} — ${item.description}`;
+            selectedPillText.textContent = item.partNumber + ' - ' + item.description;
             selectedPill.classList.remove('hidden');
             selectedPill.classList.add('flex');
             updateStockBadge(item.currentStock);
         }
 
         function updateStockBadge(stock) {
-            const val = document.getElementById('stockValue');
+            var val = document.getElementById('stockValue');
             if (stock === null || stock === undefined) {
-                val.textContent = '--';
-                val.className = 'ml-1 text-slate-400';
+                val.textContent = '--'; val.className = 'ml-1 text-slate-400';
             } else {
                 val.textContent = stock;
                 val.className = stock <= LOW_STOCK_THRESHOLD ? 'ml-1 text-red-600 font-black' : 'ml-1 text-green-600 font-black';
@@ -396,107 +330,96 @@
         }
 
         function clearSelection() {
-            partHidden.value = '';
-            searchInput.value = '';
-            clearBtn.classList.add('hidden');
-            dropdown.classList.add('hidden');
-            selectedPill.classList.add('hidden');
-            selectedPill.classList.remove('flex');
+            partHidden.value = ''; searchInput.value = '';
+            clearBtn.classList.add('hidden'); dropdown.classList.add('hidden');
+            selectedPill.classList.add('hidden'); selectedPill.classList.remove('flex');
             updateStockBadge(null);
         }
 
-        searchInput.addEventListener('input', () => {
+        searchInput.addEventListener('input', function() {
             clearBtn.classList.toggle('hidden', !searchInput.value);
             if (partHidden.value) { partHidden.value=''; selectedPill.classList.add('hidden'); selectedPill.classList.remove('flex'); }
             showDropdown(searchInput.value);
         });
-        searchInput.addEventListener('focus', () => { if (searchInput.value.trim()) showDropdown(searchInput.value); });
-        searchInput.addEventListener('blur', () => { setTimeout(() => dropdown.classList.add('hidden'), 150); });
+        searchInput.addEventListener('focus', function() { if (searchInput.value.trim()) showDropdown(searchInput.value); });
+        searchInput.addEventListener('blur', function() { setTimeout(function(){ dropdown.classList.add('hidden'); }, 150); });
         clearBtn.addEventListener('click', clearSelection);
-        clearPill.addEventListener('click', () => { clearSelection(); searchInput.focus(); });
+        clearPill.addEventListener('click', function() { clearSelection(); searchInput.focus(); });
 
-        /* ─── AUTO-REFRESH ────────────────────────────── */
-        const REFRESH_INTERVAL = 30000;
-        let refreshTimer = null;
+        var REFRESH_INTERVAL = 30000;
+        var refreshTimer = null;
 
-        async function fetchInventory(isRefresh = false) {
-            const dot  = document.getElementById('status-dot');
-            const text = document.getElementById('status-text');
+        async function fetchInventory(isRefresh) {
+            var dot  = document.getElementById('status-dot');
+            var text = document.getElementById('status-text');
             dot.classList.add('refreshing-dot');
             if (isRefresh) text.textContent = 'SYNCING';
             try {
-                const res = await fetch(SCRIPT_URL + '?t=' + Date.now());
-                const freshData = await res.json();
-                const selectedPart = partHidden.value;
+                var res = await fetch(SCRIPT_URL + '?t=' + Date.now());
+                var freshData = await res.json();
+                var selectedPart = partHidden.value;
                 if (selectedPart) {
-                    const oldItem = inventoryData.find(i => i.partNumber === selectedPart);
-                    const newItem = freshData.find(i => i.partNumber === selectedPart);
+                    var oldItem = inventoryData.find(function(i){ return i.partNumber === selectedPart; });
+                    var newItem = freshData.find(function(i){ return i.partNumber === selectedPart; });
                     if (oldItem && newItem && oldItem.currentStock !== newItem.currentStock) {
-                        const stockBadge = document.getElementById('stockDisplay');
+                        var stockBadge = document.getElementById('stockDisplay');
                         stockBadge.classList.add('stock-updated');
-                        setTimeout(() => stockBadge.classList.remove('stock-updated'), 700);
+                        setTimeout(function(){ stockBadge.classList.remove('stock-updated'); }, 700);
                         updateStockBadge(newItem.currentStock);
                     }
                 }
                 inventoryData = freshData;
                 dot.classList.remove('refreshing-dot');
-                dot.style.backgroundColor = '#22c55e';
-                dot.style.boxShadow = '0 0 5px #22c55e';
+                dot.style.backgroundColor = '#22c55e'; dot.style.boxShadow = '0 0 5px #22c55e';
                 text.textContent = 'LIVE';
-                const now = new Date();
+                var now = new Date();
                 document.getElementById('sync-time').textContent =
-                    [now.getHours(), now.getMinutes(), now.getSeconds()].map(n=>String(n).padStart(2,'0')).join(':');
+                    [now.getHours(), now.getMinutes(), now.getSeconds()].map(function(n){ return String(n).padStart(2,'0'); }).join(':');
                 document.getElementById('last-sync').classList.remove('hidden');
-            } catch {
+            } catch(err) {
                 dot.classList.remove('refreshing-dot');
-                dot.style.backgroundColor = '#ef4444';
-                dot.style.boxShadow = 'none';
+                dot.style.backgroundColor = '#ef4444'; dot.style.boxShadow = 'none';
                 text.textContent = 'OFFLINE';
                 document.getElementById('last-sync').classList.add('hidden');
             }
         }
 
-        /* ─── LOCAL HISTORY ───────────────────────────── */
-        function getHistory() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; } catch { return []; } }
+        function getHistory() { try { return JSON.parse(localStorage.getItem(HISTORY_KEY)) || []; } catch(e) { return []; } }
         function saveHistory(h) { localStorage.setItem(HISTORY_KEY, JSON.stringify(h)); }
         function addToHistory(entry) {
-            const h = getHistory();
-            h.unshift({ ...entry, timestamp: new Date().toISOString() });
+            var h = getHistory();
+            h.unshift(Object.assign({}, entry, {timestamp: new Date().toISOString()}));
             if (h.length > 30) h.splice(30);
-            saveHistory(h);
-            renderHistory();
+            saveHistory(h); renderHistory();
         }
         function renderHistory() {
-            const h = getHistory();
+            var h = getHistory();
             document.getElementById('historyCount').textContent = h.length;
-            const list = document.getElementById('historyList');
+            var list = document.getElementById('historyList');
             if (h.length === 0) { list.innerHTML = '<p class="text-sm text-slate-400 text-center py-4">No entries yet on this device.</p>'; return; }
-            list.innerHTML = h.map(item => `
-                <div class="history-item pl-3 py-2 bg-slate-50 rounded-xl">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[10px] font-black tracking-wide ${item.action==='OUT'?'text-red-500':'text-green-600'}">${item.action==='OUT'?'↑ OUT':'↓ IN'} ×${item.quantity}</span>
-                        <span class="text-[9px] text-slate-400">${fmtDate(item.timestamp)}</span>
-                    </div>
-                    <div class="text-xs font-bold text-slate-700 mt-0.5 truncate">${escapeHtml(item.partNumber)}</div>
-                    <div class="text-[10px] text-slate-500 truncate">${escapeHtml(item.technician)} · ${escapeHtml(item.jobName)}</div>
-                </div>
-            `).join('');
+            list.innerHTML = h.map(function(item) {
+                var isOut = item.action === 'OUT';
+                return '<div class="history-item pl-3 py-2 bg-slate-50 rounded-xl">' +
+                    '<div class="flex items-center justify-between">' +
+                    '<span class="text-[10px] font-black tracking-wide ' + (isOut ? 'text-red-500' : 'text-green-600') + '">' + (isOut ? '&uarr; OUT' : '&darr; IN') + ' &times;' + item.quantity + '</span>' +
+                    '<span class="text-[9px] text-slate-400">' + fmtDate(item.timestamp) + '</span></div>' +
+                    '<div class="text-xs font-bold text-slate-700 mt-0.5 truncate">' + escapeHtml(item.partNumber) + '</div>' +
+                    '<div class="text-[10px] text-slate-500 truncate">' + escapeHtml(item.technician) + ' &middot; ' + escapeHtml(item.jobName) + '</div></div>';
+            }).join('');
         }
 
-        document.getElementById('historyToggle').addEventListener('click', () => {
-            const panel = document.getElementById('historyPanel');
+        document.getElementById('historyToggle').addEventListener('click', function() {
+            var panel = document.getElementById('historyPanel');
             panel.classList.toggle('open');
             document.getElementById('historyChevron').style.transform = panel.classList.contains('open') ? 'rotate(180deg)' : '';
         });
-        document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+        document.getElementById('clearHistoryBtn').addEventListener('click', function() {
             if (confirm('Clear all local history?')) { saveHistory([]); renderHistory(); }
         });
 
-        /* ─── QR / BARCODE SCANNER ────────────────────── */
-        const qrModal  = document.getElementById('qrModal');
-        const qrVideo  = document.getElementById('qr-video');
-        const qrStatus = document.getElementById('qrStatus');
-        let codeReader = null;
+        var qrModal  = document.getElementById('qrModal');
+        var qrStatus = document.getElementById('qrStatus');
+        var codeReader = null;
 
         document.getElementById('scanBtn').addEventListener('click', openScanner);
         document.getElementById('closeQr').addEventListener('click', closeScanner);
@@ -504,34 +427,28 @@
 
         function openScanner() {
             qrModal.classList.add('active');
-            qrStatus.textContent = 'Initializing camera…';
+            qrStatus.textContent = 'Initializing camera...';
             if (typeof ZXing === 'undefined') { qrStatus.textContent = 'Scanner library not loaded.'; return; }
-
-            const hints = new Map();
+            var hints = new Map();
             hints.set(ZXing.DecodeHintType.POSSIBLE_FORMATS, [
-                ZXing.BarcodeFormat.QR_CODE, ZXing.BarcodeFormat.CODE_128,
-                ZXing.BarcodeFormat.CODE_39,  ZXing.BarcodeFormat.EAN_13,
-                ZXing.BarcodeFormat.EAN_8,    ZXing.BarcodeFormat.DATA_MATRIX,
-                ZXing.BarcodeFormat.UPC_A,    ZXing.BarcodeFormat.UPC_E
+                ZXing.BarcodeFormat.QR_CODE,   ZXing.BarcodeFormat.CODE_128,
+                ZXing.BarcodeFormat.CODE_39,    ZXing.BarcodeFormat.EAN_13,
+                ZXing.BarcodeFormat.EAN_8,      ZXing.BarcodeFormat.DATA_MATRIX,
+                ZXing.BarcodeFormat.UPC_A,      ZXing.BarcodeFormat.UPC_E
             ]);
             codeReader = new ZXing.BrowserMultiFormatReader(hints);
-
-            codeReader.decodeFromVideoDevice(null, 'qr-video', (result, err) => {
+            codeReader.decodeFromVideoDevice(null, 'qr-video', function(result, err) {
                 if (result) {
-                    const code = result.getText().trim();
-
-                    // 1. Search by UPC first (exact match)
-                    let match = inventoryData.find(i => i.upc && i.upc.toString().trim() === code);
-
-                    // 2. Fallback: search by Part Number (exact match)
-                    if (!match) match = inventoryData.find(i => i.partNumber.toLowerCase() === code.toLowerCase());
-
+                    var code = result.getText().trim();
+                    // 1. Match by UPC normalized (ignores dashes/spaces)
+                    var match = inventoryData.find(function(i){ return i.upc && normalize(i.upc) === normalize(code); });
+                    // 2. Fallback: exact Part Number
+                    if (!match) match = inventoryData.find(function(i){ return i.partNumber.toLowerCase() === code.toLowerCase(); });
                     if (match) {
                         selectItem(match);
-                        qrStatus.textContent = `✓ Found: ${match.partNumber}`;
+                        qrStatus.textContent = 'Found: ' + match.partNumber;
                         setTimeout(closeScanner, 700);
                     } else {
-                        // Not found → open "Add New Part" form with UPC pre-filled
                         closeScanner();
                         openNewPartModal(code);
                     }
@@ -539,11 +456,8 @@
                 if (err && !(err instanceof ZXing.NotFoundException)) {
                     qrStatus.textContent = 'Camera error: ' + err.message;
                 }
-            }).then(() => {
-                qrStatus.textContent = 'Scanning… point at barcode or QR';
-            }).catch(() => {
-                qrStatus.textContent = 'Camera access denied or unavailable.';
-            });
+            }).then(function(){ qrStatus.textContent = 'Scanning... point at barcode or QR'; })
+              .catch(function(){ qrStatus.textContent = 'Camera access denied or unavailable.'; });
         }
 
         function closeScanner() {
@@ -551,35 +465,29 @@
             qrModal.classList.remove('active');
         }
 
-        /* ─── NEW PART MODAL ──────────────────────────── */
-        const newPartModal = document.getElementById('newPartModal');
+        var newPartModal = document.getElementById('newPartModal');
 
         function openNewPartModal(scannedCode) {
-            document.getElementById('scannedCodeValue').textContent = scannedCode || '—';
-            document.getElementById('np-upc').value = scannedCode || '';
-            document.getElementById('np-brand').value = '';
-            document.getElementById('np-category').value = '';
+            document.getElementById('scannedCodeValue').textContent  = scannedCode || '-';
+            document.getElementById('np-upc').value        = scannedCode || '';
+            document.getElementById('np-brand').value      = '';
+            document.getElementById('np-category').value   = '';
             document.getElementById('np-partNumber').value = '';
-            document.getElementById('np-description').value = '';
-            document.getElementById('np-costPrice').value = '';
-            document.getElementById('np-salePrice').value = '';
+            document.getElementById('np-description').value= '';
+            document.getElementById('np-costPrice').value  = '';
+            document.getElementById('np-salePrice').value  = '';
             newPartModal.classList.add('active');
         }
 
-        document.getElementById('closeNewPart').addEventListener('click', () => {
-            newPartModal.classList.remove('active');
-        });
-        newPartModal.addEventListener('click', e => {
-            if (e.target === newPartModal) newPartModal.classList.remove('active');
-        });
+        document.getElementById('closeNewPart').addEventListener('click', function(){ newPartModal.classList.remove('active'); });
+        newPartModal.addEventListener('click', function(e){ if (e.target === newPartModal) newPartModal.classList.remove('active'); });
 
-        document.getElementById('newPartForm').addEventListener('submit', async (e) => {
+        document.getElementById('newPartForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const btn = document.getElementById('newPartSubmitBtn');
+            var btn = document.getElementById('newPartSubmitBtn');
             btn.disabled = true;
-            btn.querySelector('span').textContent = 'Saving…';
-
-            const newPart = {
+            btn.querySelector('span').textContent = 'Saving...';
+            var newPart = {
                 action:      'NEW_PART',
                 brand:       document.getElementById('np-brand').value.trim(),
                 category:    document.getElementById('np-category').value.trim(),
@@ -589,89 +497,70 @@
                 costPrice:   document.getElementById('np-costPrice').value || '',
                 salePrice:   document.getElementById('np-salePrice').value || ''
             };
-
             try {
                 await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(newPart) });
-
-                // Add to local inventoryData immediately so it's selectable right away
-                const localEntry = {
-                    brand:        newPart.brand,
-                    partNumber:   newPart.partNumber,
-                    description:  newPart.description,
-                    currentStock: 0,
-                    upc:          newPart.upc,
-                    costPrice:    newPart.costPrice,
-                    salePrice:    newPart.salePrice,
-                    category:     newPart.category
-                };
+                var localEntry = Object.assign({}, newPart, { currentStock: 0 });
                 inventoryData.push(localEntry);
-
                 newPartModal.classList.remove('active');
                 selectItem(localEntry);
-
                 btn.disabled = false;
                 btn.querySelector('span').textContent = 'Save & Add to Inventory';
-            } catch {
+            } catch(err) {
                 alert('Error saving. Check your connection.');
                 btn.disabled = false;
                 btn.querySelector('span').textContent = 'Save & Add to Inventory';
             }
         });
 
-        /* ─── FORM SUBMIT ─────────────────────────────── */
-        document.getElementById('inventoryForm').onsubmit = async (e) => {
+        document.getElementById('inventoryForm').onsubmit = async function(e) {
             e.preventDefault();
             if (!partHidden.value) {
                 searchInput.focus();
                 searchInput.classList.add('ring-2','ring-red-500');
-                setTimeout(() => searchInput.classList.remove('ring-2','ring-red-500'), 1500);
+                setTimeout(function(){ searchInput.classList.remove('ring-2','ring-red-500'); }, 1500);
                 return;
             }
-            const btn = document.getElementById('submitBtn');
-            const msg = document.getElementById('successMsg');
+            var btn = document.getElementById('submitBtn');
+            var msg = document.getElementById('successMsg');
             btn.disabled = true;
-            btn.querySelector('span').textContent = 'Sending…';
-
-            const payload = {
+            btn.querySelector('span').textContent = 'Sending...';
+            var payload = {
                 technician: document.getElementById('technician').value,
                 jobName:    document.getElementById('jobName').value,
                 partNumber: partHidden.value,
                 action:     document.getElementById('action').value,
                 quantity:   document.getElementById('quantity').value
             };
-
             try {
                 await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: JSON.stringify(payload) });
                 addToHistory(payload);
                 msg.classList.remove('hidden');
                 document.getElementById('inventoryForm').reset();
                 clearSelection();
-                setTimeout(() => {
+                setTimeout(function() {
                     msg.classList.add('hidden');
                     btn.disabled = false;
                     btn.querySelector('span').textContent = 'SUBMIT ENTRY';
                     fetchInventory(true);
                 }, 2500);
-            } catch {
+            } catch(err) {
                 alert('Error connecting to Sheets. Check your connection.');
                 btn.disabled = false;
                 btn.querySelector('span').textContent = 'SUBMIT ENTRY';
             }
         };
 
-        /* ─── INIT ────────────────────────────────────── */
-        window.onload = async () => {
-            if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
+        window.onload = async function() {
+            if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(function(){});
             renderHistory();
             await fetchInventory(false);
-            refreshTimer = setInterval(() => fetchInventory(true), REFRESH_INTERVAL);
-            document.addEventListener('visibilitychange', () => {
+            refreshTimer = setInterval(function(){ fetchInventory(true); }, REFRESH_INTERVAL);
+            document.addEventListener('visibilitychange', function() {
                 if (document.hidden) { clearInterval(refreshTimer); }
-                else { fetchInventory(true); refreshTimer = setInterval(() => fetchInventory(true), REFRESH_INTERVAL); }
+                else { fetchInventory(true); refreshTimer = setInterval(function(){ fetchInventory(true); }, REFRESH_INTERVAL); }
             });
         };
     </script>
 </body>
 </html>
-
 
